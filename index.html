@@ -1,0 +1,2900 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Guía Maestra y Tutorial: Funciones Interactivas en NotebookLM</title>
+  <style>
+    :root {
+      --bg-main: #0a0e1a;
+      --bg-card: #0f172a;
+      --bg-card-alt: #131d36;
+      --bg-elevated: #182544;
+      --border-subtle: #1e3a5f;
+      --border-strong: #2d568c;
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.16);
+      --accent-glow: rgba(56, 189, 248, 0.35);
+      --accent-alt: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --base-font-size: 16px;
+      --nav-height: 58px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --shadow-card: 0 10px 28px rgba(2, 6, 23, 0.55);
+    }
+
+    html.theme-light {
+      --bg-main: #f1f5f9;
+      --bg-card: #ffffff;
+      --bg-card-alt: #f8fafc;
+      --bg-elevated: #e2e8f0;
+      --border-subtle: #cbd5e1;
+      --border-strong: #94a3b8;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --accent: #0284c7;
+      --accent-soft: rgba(2, 132, 199, 0.12);
+      --accent-glow: rgba(2, 132, 199, 0.25);
+      --accent-alt: #4f46e5;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --shadow-card: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: var(--base-font-size);
+      scroll-behavior: smooth;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.65;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Barra de progreso de lectura */
+    #readingProgressContainer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: transparent;
+      z-index: 60;
+      pointer-events: none;
+    }
+
+    #readingProgressBar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-alt));
+      transition: width 0.1s linear;
+    }
+
+    /* Barra de navegación superior fija */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-height);
+      background: rgba(15, 23, 42, 0.96);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      z-index: 40;
+    }
+
+    html.theme-light .top-nav {
+      background: rgba(255, 255, 255, 0.96);
+    }
+
+    .brand-mini {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      padding: 4px 6px;
+      border-radius: var(--radius-sm);
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid var(--border-subtle);
+      cursor: pointer;
+    }
+
+    .brand-mini svg {
+      width: 28px;
+      height: 28px;
+      display: block;
+    }
+
+    .brand-mini-text {
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      display: none;
+    }
+
+    @media (min-width: 480px) {
+      .brand-mini-text {
+        display: inline;
+      }
+    }
+
+    .nav-chips-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      flex: 1;
+      padding: 4px 0;
+    }
+
+    .nav-chips-wrapper::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 42px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.1s;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .chip:focus-visible, button:focus-visible, input:focus-visible, a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .chip.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    /* Panel lateral Índice (Menú sándwich) */
+    #dr {
+      position: fixed;
+      top: 58px;
+      left: 0;
+      bottom: 0;
+      width: min(330px, 88vw);
+      background: #0f172a;
+      border-right: 1px solid #1e3a5f;
+      transform: translateX(-105%);
+      transition: transform 0.25s ease;
+      z-index: 45;
+      overflow-y: auto;
+      padding: 12px;
+      box-shadow: 12px 0 32px rgba(0, 0, 0, 0.65);
+    }
+
+    html.theme-light #dr {
+      background: #ffffff;
+      border-right-color: #cbd5e1;
+    }
+
+    #dr.o {
+      transform: translateX(0);
+    }
+
+    .drawer-header {
+      padding: 6px 10px 12px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #dr a {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #e2e8f0;
+      text-decoration: none;
+      cursor: pointer;
+      min-height: 44px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 4px;
+      transition: background-color 0.18s, color 0.18s;
+    }
+
+    html.theme-light #dr a {
+      color: #0f172a;
+    }
+
+    #dr a:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    html.theme-light #dr a:hover {
+      background: rgba(15, 23, 42, 0.05);
+    }
+
+    #dr a.on {
+      background: rgba(0, 212, 255, 0.16);
+      color: #38bdf8;
+      font-weight: 700;
+      border-left: 3px solid #38bdf8;
+    }
+
+    html.theme-light #dr a.on {
+      background: rgba(2, 132, 199, 0.14);
+      color: #0284c7;
+      border-left-color: #0284c7;
+    }
+
+    /* Barra de herramientas secundaria */
+    .utility-bar {
+      margin-top: calc(var(--nav-height) + 10px);
+      padding: 8px 12px;
+      max-width: 1040px;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-box {
+      flex: 1 1 200px;
+      display: flex;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      padding: 0 12px;
+      min-height: 42px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      padding: 8px 6px;
+      outline: none;
+    }
+
+    .tool-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tool-btn {
+      min-height: 42px;
+      min-width: 42px;
+      padding: 0 11px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .tool-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    /* Resultados de búsqueda */
+    #searchResultsPanel {
+      max-width: 1040px;
+      margin: 8px auto 0;
+      padding: 0 12px;
+      display: none;
+    }
+
+    #searchResultsPanel.visible {
+      display: block;
+    }
+
+    .search-results-card {
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .search-hit {
+      padding: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+    }
+
+    .search-hit:last-child {
+      border-bottom: none;
+    }
+
+    .search-hit:hover {
+      background: var(--accent-soft);
+    }
+
+    /* Contenedor principal SPA */
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 12px 12px 96px;
+    }
+
+    .tab-section {
+      display: none;
+      animation: fadeInTab 0.25s ease-out;
+    }
+
+    .tab-section.active {
+      display: block;
+    }
+
+    @keyframes fadeInTab {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cabecera Hero de INICIO */
+    .hero-card {
+      background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-card-alt) 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 18px 14px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-card);
+    }
+
+    @media (min-width: 640px) {
+      .hero-card {
+        padding: 26px 24px;
+      }
+    }
+
+    .hero-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .hero-logo-box {
+      flex-shrink: 0;
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      background: #070d1a;
+      border: 1.5px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 18px var(--accent-glow);
+      padding: 4px;
+    }
+
+    @media (min-width: 640px) {
+      .hero-logo-box {
+        width: 68px;
+        height: 68px;
+      }
+    }
+
+    .hero-logo-box svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .hero-title-text h1 {
+      margin: 0;
+      font-size: 1.32rem;
+      line-height: 1.25;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    @media (min-width: 640px) {
+      .hero-title-text h1 {
+        font-size: 1.85rem;
+      }
+    }
+
+    .hero-author-tag {
+      display: inline-block;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .hero-subtitle {
+      margin: 6px 0 0;
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+    }
+
+    /* Contenedor SVG Hero Animado */
+    .svg-stage-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 440px;
+      aspect-ratio: 4 / 5;
+      margin: 16px auto;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-strong);
+      background: #060a14;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .svg-stage-wrapper svg,
+    .svg-stage-wrapper img {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .svg-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* Tarjetas de contenido */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px 14px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+    }
+
+    @media (min-width: 640px) {
+      .card {
+        padding: 22px 20px;
+      }
+    }
+
+    .section-header {
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-badge {
+      display: inline-block;
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 4px 10px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.35rem;
+      line-height: 1.3;
+      color: var(--text-primary);
+    }
+
+    h3 {
+      margin: 18px 0 10px;
+      font-size: 1.1rem;
+      color: var(--accent);
+    }
+
+    h4 {
+      margin: 14px 0 6px;
+      font-size: 0.98rem;
+      color: var(--text-primary);
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    ul, ol {
+      margin: 0 0 14px;
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    /* Bloques pedagógicos estructurados */
+    .pedagogy-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    @media (min-width: 720px) {
+      .pedagogy-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .pedagogy-box {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+
+    .pedagogy-box strong {
+      display: block;
+      color: var(--accent);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+    }
+
+    /* Bloques de Prompt y Código Copiables */
+    .prompt-card {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin: 14px 0;
+    }
+
+    .prompt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .prompt-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .copy-btn {
+      min-height: 40px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .copy-btn:hover {
+      background: var(--accent);
+      color: #0a0e1a;
+    }
+
+    .prompt-body {
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      background: rgba(6, 10, 20, 0.65);
+      color: #e2e8f0;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 0;
+    }
+
+    html.theme-light .prompt-body {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    /* Botones para enlaces externos */
+    .url-action-box {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin: 10px 0;
+    }
+
+    .url-info {
+      flex: 1 1 200px;
+      min-width: 0;
+    }
+
+    .url-title {
+      font-weight: 700;
+      font-size: 0.92rem;
+      display: block;
+    }
+
+    .url-raw {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      word-break: break-all;
+    }
+
+    .url-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .open-link-btn {
+      min-height: 42px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #0a0e1a;
+      font-weight: 700;
+      font-size: 0.82rem;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .open-link-btn:hover {
+      filter: brightness(1.1);
+    }
+
+    /* Tablas responsivas */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      margin: 14px 0;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      min-width: 520px;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--bg-elevated);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* Acordeones y Q&A */
+    .qa-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+    }
+
+    .btn-primary {
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #0a0e1a;
+      border: none;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-secondary {
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    details.qa-item, details.accordion-item {
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    details.qa-item[open], details.accordion-item[open] {
+      border-color: var(--accent);
+    }
+
+    details summary {
+      padding: 13px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 46px;
+      user-select: none;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details summary::after {
+      content: "+";
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    details[open] summary::after {
+      content: "−";
+    }
+
+    .details-content {
+      padding: 0 14px 14px;
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 12px;
+      color: var(--text-primary);
+    }
+
+    /* Checklist interactiva */
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-card-alt);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 8px;
+      cursor: pointer;
+      min-height: 44px;
+    }
+
+    .checklist-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      accent-color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* Navegación fija al final de cada pestaña */
+    .tab-footer-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+      flex-wrap: wrap;
+    }
+
+    .tab-footer-nav .nav-step-btn {
+      flex: 1 1 140px;
+      min-height: 48px;
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-prev {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+    }
+
+    .btn-next {
+      background: var(--accent);
+      color: #0a0e1a;
+      border: none;
+    }
+
+    /* Botones flotantes desplazables (Draggable) */
+    .floating-draggable {
+      position: fixed;
+      z-index: 50;
+      min-height: 46px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.94);
+      color: #38bdf8;
+      border: 1.5px solid #38bdf8;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+      font-size: 0.82rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .floating-draggable:active {
+      cursor: grabbing;
+    }
+
+    #floatHomeBtn {
+      bottom: 76px;
+      right: 12px;
+    }
+
+    #floatTopBtn {
+      bottom: 20px;
+      right: 12px;
+    }
+
+    /* Toast de notificación */
+    #toastBanner {
+      position: fixed;
+      bottom: 136px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--accent);
+      color: #0a0e1a;
+      font-weight: 700;
+      font-size: 0.86rem;
+      padding: 10px 18px;
+      border-radius: 999px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 70;
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    #toastBanner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Créditos */
+    .credits-author-highlight {
+      font-size: 1.9rem;
+      font-weight: 900;
+      color: var(--accent);
+      margin: 14px 0 4px;
+      letter-spacing: -0.02em;
+    }
+
+    /* Animaciones SVG internas */
+    @keyframes orbitSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes orbitReverse {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+
+    @keyframes pulseCore {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+
+    @keyframes floatNode {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-7px); }
+    }
+
+    @keyframes dashFlow {
+      to { stroke-dashoffset: -48; }
+    }
+
+    @keyframes waveBar {
+      0%, 100% { transform: scaleY(0.35); }
+      50% { transform: scaleY(1); }
+    }
+
+    .svg-orbit-cw {
+      transform-origin: 200px 250px;
+      animation: orbitSlow 28s linear infinite;
+    }
+
+    .svg-orbit-ccw {
+      transform-origin: 200px 250px;
+      animation: orbitReverse 22s linear infinite;
+    }
+
+    .svg-pulse {
+      transform-origin: 200px 250px;
+      animation: pulseCore 3.4s ease-in-out infinite;
+    }
+
+    .svg-float-1 { animation: floatNode 4.2s ease-in-out infinite; }
+    .svg-float-2 { animation: floatNode 5.1s ease-in-out infinite 0.7s; }
+    .svg-float-3 { animation: floatNode 4.6s ease-in-out infinite 1.4s; }
+    .svg-float-4 { animation: floatNode 5.4s ease-in-out infinite 2.1s; }
+
+    .svg-stream {
+      stroke-dasharray: 8 8;
+      animation: dashFlow 1.6s linear infinite;
+    }
+
+    .svg-wave-1 { transform-origin: center; animation: waveBar 1.1s ease-in-out infinite; }
+    .svg-wave-2 { transform-origin: center; animation: waveBar 1.4s ease-in-out infinite 0.2s; }
+    .svg-wave-3 { transform-origin: center; animation: waveBar 0.9s ease-in-out infinite 0.4s; }
+    .svg-wave-4 { transform-origin: center; animation: waveBar 1.3s ease-in-out infinite 0.6s; }
+    .svg-wave-5 { transform-origin: center; animation: waveBar 1.0s ease-in-out infinite 0.3s; }
+
+    .svg-paused * {
+      animation-play-state: paused !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .svg-orbit-cw, .svg-orbit-ccw, .svg-pulse,
+      .svg-float-1, .svg-float-2, .svg-float-3, .svg-float-4,
+      .svg-stream, .svg-wave-1, .svg-wave-2, .svg-wave-3, .svg-wave-4, .svg-wave-5 {
+        animation: none !important;
+      }
+    }
+
+    /* Reglas de Impresión A4 Vertical */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 14mm 12mm;
+      }
+
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt;
+        line-height: 1.45;
+      }
+
+      .top-nav, #dr, .utility-bar, #searchResultsPanel,
+      .floating-draggable, .tab-footer-nav, .svg-controls,
+      #readingProgressContainer, #toastBanner, .copy-btn, .open-link-btn {
+        display: none !important;
+      }
+
+      main {
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+      }
+
+      .tab-section {
+        display: block !important;
+        margin-bottom: 20px;
+      }
+
+      .card, .hero-card, .pedagogy-box, .prompt-card, details.qa-item, details.accordion-item {
+        background: #ffffff !important;
+        color: #000000 !important;
+        border: 1px solid #999999 !important;
+        box-shadow: none !important;
+      }
+
+      h1, h2, h3, h4, strong, .hero-author-tag, .credits-author-highlight, .section-badge {
+        color: #000000 !important;
+        background: transparent !important;
+      }
+
+      .prompt-body {
+        background: #f4f4f4 !important;
+        color: #000000 !important;
+        border: 1px solid #cccccc !important;
+      }
+
+      .svg-stage-wrapper {
+        max-width: 260px !important;
+        border: 1px solid #333333 !important;
+        background: #0a0e1a !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      table, pre, blockquote {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de progreso de lectura -->
+  <div id="readingProgressContainer" aria-hidden="true">
+    <div id="readingProgressBar"></div>
+  </div>
+
+  <!-- Plantilla SVG Única del Logotipo (IA Tutoriales) -->
+  <template id="brandLogoTemplate">
+    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Logotipo IA Tutoriales">
+      <defs>
+        <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#38bdf8" />
+          <stop offset="50%" stop-color="#0284c7" />
+          <stop offset="100%" stop-color="#818cf8" />
+        </linearGradient>
+        <linearGradient id="playGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#e0f2fe" />
+          <stop offset="100%" stop-color="#38bdf8" />
+        </linearGradient>
+      </defs>
+      <!-- Escudo exterior -->
+      <path d="M60 8 L104 26 L104 62 C104 88 84 106 60 114 C36 106 16 88 16 62 L16 26 Z" fill="#071124" stroke="url(#shieldGrad)" stroke-width="4.5" />
+      <!-- Hemisferio izquierdo neuronal -->
+      <path d="M56 26 C40 26 30 37 30 50 C25 54 25 65 31 70 C30 82 41 91 56 91 Z" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+      <path d="M48 36 C40 36 37 43 42 48 M46 56 C37 56 35 64 43 68 M49 76 C42 76 41 83 49 84" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" />
+      <!-- Hemisferio derecho circuitos -->
+      <path d="M64 26 C80 26 90 37 90 50 C95 54 95 65 89 70 C90 82 79 91 64 91 Z" fill="none" stroke="#818cf8" stroke-width="3" stroke-linecap="round" />
+      <line x1="66" y1="40" x2="82" y2="40" stroke="#38bdf8" stroke-width="2.2" />
+      <circle cx="84" cy="40" r="2.8" fill="#38bdf8" />
+      <line x1="68" y1="58" x2="86" y2="58" stroke="#818cf8" stroke-width="2.2" />
+      <circle cx="88" cy="58" r="2.8" fill="#818cf8" />
+      <line x1="66" y1="76" x2="80" y2="76" stroke="#38bdf8" stroke-width="2.2" />
+      <circle cx="82" cy="76" r="2.8" fill="#38bdf8" />
+      <!-- Botón central Play -->
+      <circle cx="60" cy="58" r="16" fill="#0a162e" stroke="#38bdf8" stroke-width="2.8" />
+      <polygon points="56,50 69,58 56,66" fill="url(#playGrad)" />
+      <!-- Distintivo IA -->
+      <rect x="34" y="92" width="52" height="18" rx="5" fill="#0a162e" stroke="#38bdf8" stroke-width="1.8" />
+      <text x="60" y="105" text-anchor="middle" fill="#38bdf8" font-family="system-ui, sans-serif" font-weight="900" font-size="13" letter-spacing="1.5">IA</text>
+    </svg>
+  </template>
+
+  <!-- Plantilla SVG Única del HERO Animado Multicapa (NotebookLM Interactive Studio) -->
+  <div id="heroSvgMasterSource" hidden aria-hidden="true">
+    <svg viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="bgRadial" cx="50%" cy="48%" r="65%">
+          <stop offset="0%" stop-color="#132a52" />
+          <stop offset="55%" stop-color="#0a1326" />
+          <stop offset="100%" stop-color="#050811" />
+        </radialGradient>
+        <linearGradient id="coreHalo" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#38bdf8" />
+          <stop offset="50%" stop-color="#818cf8" />
+          <stop offset="100%" stop-color="#34d399" />
+        </linearGradient>
+        <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#172747" stop-opacity="0.95" />
+          <stop offset="100%" stop-color="#0d162b" stop-opacity="0.95" />
+        </linearGradient>
+        <filter id="neonGlow" x="-25%" y="-25%" width="150%" height="150%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- Capa 1: Fondo tecnológico con retícula sutil -->
+      <rect width="400" height="500" fill="url(#bgRadial)" />
+      <g stroke="#1e3a5f" stroke-width="0.7" opacity="0.45">
+        <line x1="0" y1="80" x2="400" y2="80" />
+        <line x1="0" y1="165" x2="400" y2="165" />
+        <line x1="0" y1="250" x2="400" y2="250" />
+        <line x1="0" y1="335" x2="400" y2="335" />
+        <line x1="0" y1="420" x2="400" y2="420" />
+        <line x1="80" y1="0" x2="80" y2="500" />
+        <line x1="200" y1="0" x2="200" y2="500" />
+        <line x1="320" y1="0" x2="320" y2="500" />
+      </g>
+
+      <!-- Encabezado HUD superior -->
+      <rect x="24" y="18" width="352" height="32" rx="16" fill="#0d182e" stroke="#2d568c" stroke-width="1.2" />
+      <circle cx="44" cy="34" r="5" fill="#34d399" />
+      <text x="58" y="38" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="11" font-weight="700" letter-spacing="0.8">NOTEBOOKLM · STUDIO INTERACTIVO</text>
+      <text x="362" y="38" text-anchor="end" fill="#38bdf8" font-family="monospace" font-size="10" font-weight="700">100% FUENTES</text>
+
+      <!-- Capa 2: Anillos orbitales de síntesis de conocimiento -->
+      <g class="svg-orbit-cw">
+        <circle cx="200" cy="250" r="142" fill="none" stroke="#38bdf8" stroke-width="1.4" stroke-dasharray="12 8 3 8" opacity="0.55" />
+        <circle cx="200" cy="108" r="5" fill="#38bdf8" filter="url(#neonGlow)" />
+        <circle cx="200" cy="392" r="5" fill="#818cf8" filter="url(#neonGlow)" />
+      </g>
+      <g class="svg-orbit-ccw">
+        <circle cx="200" cy="250" r="106" fill="none" stroke="#818cf8" stroke-width="1.6" stroke-dasharray="22 10" opacity="0.65" />
+        <circle cx="94" cy="250" r="4.5" fill="#34d399" />
+        <circle cx="306" cy="250" r="4.5" fill="#fbbf24" />
+      </g>
+
+      <!-- Capa 3: Flujos de datos (Grounded Citations) conectando las 4 fuentes hacia el núcleo -->
+      <g fill="none" stroke-width="2.2" class="svg-stream">
+        <path d="M 88 128 Q 140 175 175 220" stroke="#38bdf8" />
+        <path d="M 312 128 Q 260 175 225 220" stroke="#818cf8" />
+        <path d="M 88 372 Q 140 325 175 280" stroke="#34d399" />
+        <path d="M 312 372 Q 260 325 225 280" stroke="#fbbf24" />
+      </g>
+
+      <!-- Capa 4: Núcleo Central NotebookLM (Cuaderno + Ondas de Audio Overview) -->
+      <g class="svg-pulse">
+        <circle cx="200" cy="250" r="64" fill="#0b152b" stroke="url(#coreHalo)" stroke-width="3.5" filter="url(#neonGlow)" />
+        <circle cx="200" cy="250" r="52" fill="#102040" stroke="#38bdf8" stroke-width="1" opacity="0.7" />
+        <!-- Icono de cuaderno central -->
+        <rect x="176" y="220" width="48" height="36" rx="6" fill="#091224" stroke="#38bdf8" stroke-width="2" />
+        <line x1="200" y1="220" x2="200" y2="256" stroke="#38bdf8" stroke-width="1.8" />
+        <line x1="182" y1="230" x2="195" y2="230" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" />
+        <line x1="182" y1="238" x2="195" y2="238" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" />
+        <line x1="205" y1="230" x2="218" y2="230" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
+        <line x1="205" y1="238" x2="218" y2="238" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
+        <!-- Ecualizador dinámico Audio Overview -->
+        <g fill="#34d399">
+          <rect x="181" y="264" width="4" height="16" rx="2" class="svg-wave-1" />
+          <rect x="189" y="261" width="4" height="22" rx="2" class="svg-wave-2" />
+          <rect x="197" y="259" width="5" height="26" rx="2.5" fill="#38bdf8" class="svg-wave-3" />
+          <rect x="206" y="261" width="4" height="22" rx="2" class="svg-wave-4" />
+          <rect x="214" y="264" width="4" height="16" rx="2" class="svg-wave-5" />
+        </g>
+      </g>
+
+      <!-- Capa 5: Nodos Flotantes de Funciones Interactivas -->
+      <!-- Nodo Superior Izquierdo: Fuentes & Citas -->
+      <g class="svg-float-1">
+        <rect x="24" y="84" width="114" height="54" rx="10" fill="url(#cardGrad)" stroke="#38bdf8" stroke-width="1.6" />
+        <circle cx="42" cy="103" r="8" fill="#38bdf8" fill-opacity="0.2" stroke="#38bdf8" stroke-width="1.5" />
+        <text x="42" y="107" text-anchor="middle" fill="#38bdf8" font-family="monospace" font-size="10" font-weight="800">[1]</text>
+        <text x="56" y="106" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700">Citas Exactas</text>
+        <text x="34" y="125" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">PDF · Web · YouTube</text>
+      </g>
+
+      <!-- Nodo Superior Derecho: Audio Interactivo -->
+      <g class="svg-float-2">
+        <rect x="262" y="84" width="114" height="54" rx="10" fill="url(#cardGrad)" stroke="#818cf8" stroke-width="1.6" />
+        <circle cx="280" cy="103" r="8" fill="#818cf8" fill-opacity="0.2" stroke="#818cf8" stroke-width="1.5" />
+        <polygon points="278,99 285,103 278,107" fill="#818cf8" />
+        <text x="294" y="106" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700">Modo Unirse</text>
+        <text x="272" y="125" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">Diálogo en tiempo real</text>
+      </g>
+
+      <!-- Nodo Inferior Izquierdo: Mapas Mentales -->
+      <g class="svg-float-3">
+        <rect x="24" y="362" width="114" height="54" rx="10" fill="url(#cardGrad)" stroke="#34d399" stroke-width="1.6" />
+        <circle cx="42" cy="381" r="4" fill="#34d399" />
+        <circle cx="52" cy="375" r="3" fill="#34d399" />
+        <circle cx="52" cy="387" r="3" fill="#34d399" />
+        <line x1="42" y1="381" x2="52" y2="375" stroke="#34d399" stroke-width="1.4" />
+        <line x1="42" y1="381" x2="52" y2="387" stroke="#34d399" stroke-width="1.4" />
+        <text x="61" y="384" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700">Mapa Mental</text>
+        <text x="34" y="403" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">Nodos interactivos</text>
+      </g>
+
+      <!-- Nodo Inferior Derecho: Panel Studio -->
+      <g class="svg-float-4">
+        <rect x="262" y="362" width="114" height="54" rx="10" fill="url(#cardGrad)" stroke="#fbbf24" stroke-width="1.6" />
+        <rect x="274" y="374" width="12" height="12" rx="3" fill="none" stroke="#fbbf24" stroke-width="1.6" />
+        <text x="292" y="384" fill="#e2e8f0" font-family="system-ui, sans-serif" font-size="10.5" font-weight="700">Panel Studio</text>
+        <text x="272" y="403" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="9">Guías · FAQs · Notas</text>
+      </g>
+
+      <!-- Pie técnico inferior -->
+      <rect x="24" y="446" width="352" height="36" rx="10" fill="#0d182e" stroke="#1e3a5f" stroke-width="1.2" />
+      <text x="200" y="468" text-anchor="middle" fill="#94a3b8" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600">
+        SÍNTESIS DOCUMENTAL · CERO ALUCINACIONES EXTERNAS
+      </text>
+    </svg>
+  </div>
+
+  <!-- Barra de Navegación Superior Fija -->
+  <nav class="top-nav" aria-label="Navegación principal del tutorial">
+    <div class="brand-mini" id="brandNavBtn" role="button" tabindex="0" aria-label="Ir a Inicio - IA Tutoriales">
+      <span id="navLogoSlot"></span>
+      <span class="brand-mini-text">IA TUTORIALES</span>
+    </div>
+
+    <!-- Botón Menú Sándwich Índice (primer botón de navegación) -->
+    <button class="chip" id="mb" aria-label="Abrir índice" aria-expanded="false">☰ Índice</button>
+
+    <!-- Chips de pestañas -->
+    <div class="nav-chips-wrapper" id="navChipsContainer" role="tablist"></div>
+  </nav>
+
+  <!-- Panel Lateral Desplegable Índice -->
+  <aside id="dr" aria-label="Índice completo del tutorial"></aside>
+
+  <!-- Barra de Herramientas (Buscador, Fuente, Tema, Imprimir) -->
+  <div class="utility-bar">
+    <div class="search-box">
+      <span aria-hidden="true">🔍</span>
+      <input type="search" id="globalSearchInput" placeholder="Buscar en todo el tutorial..." aria-label="Buscar en todo el tutorial" />
+    </div>
+    <div class="tool-group">
+      <button class="tool-btn" id="fontDecBtn" aria-label="Reducir tamaño de letra" title="Reducir letra">A−</button>
+      <button class="tool-btn" id="fontIncBtn" aria-label="Aumentar tamaño de letra" title="Aumentar letra">A+</button>
+      <button class="tool-btn" id="themeToggleBtn" aria-label="Cambiar entre tema oscuro y claro" title="Tema claro / oscuro">🌓 Tema</button>
+      <button class="tool-btn" id="printTutorialBtn" aria-label="Imprimir o guardar como PDF" title="Imprimir o guardar PDF">🖨️ PDF</button>
+    </div>
+  </div>
+
+  <!-- Panel de Resultados del Buscador -->
+  <div id="searchResultsPanel" role="region" aria-label="Resultados de búsqueda">
+    <div class="search-results-card" id="searchResultsContent"></div>
+  </div>
+
+  <!-- Contenedor Principal de Pestañas -->
+  <main id="mainContent">
+
+    <!-- PESTAÑA 0: INICIO -->
+    <section class="tab-section active" data-t="Inicio" id="tab-inicio">
+      <div class="hero-card">
+        <div class="hero-title-row">
+          <div class="hero-logo-box" id="heroLogoSlot" aria-hidden="true"></div>
+          <div class="hero-title-text">
+            <h1>Guía Maestra: Funciones Interactivas en NotebookLM <span class="hero-author-tag">by Rubén Sbarsky</span></h1>
+            <p class="hero-subtitle">Aprendizaje autónomo y autodidacta sobre síntesis documental, citas verificables, Audio Overviews interactivos, Mapas Mentales y flujos en el Panel Studio.</p>
+          </div>
+        </div>
+
+        <!-- Ilustración SVG Hero Animada -->
+        <div class="svg-stage-wrapper" id="heroSvgContainer" role="img" aria-label="Ilustración animada de NotebookLM conectando fuentes documentales con citas verificables, Audio Overview interactivo, Mapas Mentales y el Panel Studio"></div>
+
+        <div class="svg-controls">
+          <button class="btn-secondary" id="toggleHeroAnimBtn" type="button">⏸️ Pausar / Reanudar animación</button>
+          <button class="btn-primary" id="ix" type="button">☰ Ver índice</button>
+        </div>
+
+        <div class="pedagogy-grid">
+          <div class="pedagogy-box">
+            <strong>¿Qué es NotebookLM?</strong>
+            <p>Un entorno de investigación y síntesis asistido por inteligencia artificial de Google diseñado para trabajar exclusivamente sobre tus propias fuentes documentales.</p>
+          </div>
+          <div class="pedagogy-box">
+            <strong>¿Para qué sirve?</strong>
+            <p>Para transformar PDFs, enlaces web, vídeos de YouTube, audios y documentos de Google en respuestas con citas exactas, podcasts interactivos, guías de estudio y mapas mentales.</p>
+          </div>
+          <div class="pedagogy-box">
+            <strong>¿Por qué importa?</strong>
+            <p>Reduce drasticamente las alucinaciones habituales de los chatbots genéricos al anclar cada afirmación en fragmentos verificables de tus propios archivos.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <span class="section-badge">Hoja de Ruta del Tutorial</span>
+          <h2>¿Qué dominarás en esta guía interactiva?</h2>
+        </div>
+        <p>Este documento maestro está estructurado para que cualquier persona, sin conocimientos técnicos previos, pueda dominar todas las herramientas interactivas de NotebookLM paso a paso:</p>
+        <ul>
+          <li><strong>Fundamentos y Arquitectura:</strong> Cómo funciona el anclaje en fuentes (<em>grounding</em>), los límites de capacidad y los tres paneles de trabajo (Fuentes, Chat y Studio).</li>
+          <li><strong>Procedimientos Paso a Paso:</strong> Carga de fuentes, verificación de citas numeradas, interacción por voz en <em>Audio Overviews</em> (modo Unirse), exploración de Mapas Mentales y creación de notas en Studio.</li>
+          <li><strong>10 Ejemplos Prácticos + 10 Proyectos Integradores:</strong> Casos reales listos para aplicar en estudio, empresa, investigación académica, docencia y creación de contenido.</li>
+          <li><strong>33 Preguntas y Respuestas (Q&amp;A):</strong> Banco de evaluación progresivo dividido en Nivel 1 (Básico), Nivel 2 (Intermedio) y Nivel 3 (Avanzado).</li>
+          <li><strong>Solución de Errores, Prompts y Glosario:</strong> Diagnóstico de fallos habituales, biblioteca completa de prompts copiables y diccionario técnico claro.</li>
+        </ul>
+
+        <h3>Acceso directo oficial a NotebookLM</h3>
+        <div class="url-action-box">
+          <div class="url-info">
+            <span class="url-title">Google NotebookLM (Aplicación Web Oficial)</span>
+            <span class="url-raw">https://notebooklm.google.com</span>
+          </div>
+          <div class="url-buttons">
+            <button class="copy-btn" type="button" data-copy="https://notebooklm.google.com">📋 Copiar URL</button>
+            <button class="open-link-btn" type="button" data-url="https://notebooklm.google.com">Abrir enlace en nueva ventana ↗</button>
+          </div>
+        </div>
+
+        <h3>Lista de comprobación de progreso personal</h3>
+        <p>Marca cada hito conforme avances (tu progreso se guarda automáticamente en este dispositivo):</p>
+        <div id="homeChecklist">
+          <label class="checklist-item"><input type="checkbox" data-check="chk_1" /> <span>1. Comprender la diferencia entre un chat genérico y un cuaderno anclado en fuentes.</span></label>
+          <label class="checklist-item"><input type="checkbox" data-check="chk_2" /> <span>2. Crear un cuaderno y cargar al menos 3 tipos distintos de fuentes (PDF, Web, YouTube).</span></label>
+          <label class="checklist-item"><input type="checkbox" data-check="chk_3" /> <span>3. Verificar una respuesta haciendo clic en sus citas numeradas en línea.</span></label>
+          <label class="checklist-item"><input type="checkbox" data-check="chk_4" /> <span>4. Generar un Audio Overview e intervenir en directo mediante el modo interactivo.</span></label>
+          <label class="checklist-item"><input type="checkbox" data-check="chk_5" /> <span>5. Explorar un Mapa Mental interactivo y guardar una síntesis en el Panel Studio.</span></label>
+        </div>
+      </div>
+
+      <div class="tab-footer-nav" data-tab-index="0"></div>
+    </section>
+
+    <!-- PESTAÑA 1: CONCEPTOS Y ARQUITECTURA -->
+    <section class="tab-section" data-t="Conceptos y Arquitectura" id="tab-conceptos">
+      <div class="card">
+        <div class="section-header">
+          <span class="section-badge">Base Conceptual</span>
+          <h2>Conceptos Clave y Arquitectura de NotebookLM</h2>
+        </div>
+
+        <p>Para aprovechar al máximo las funciones interactivas de NotebookLM, conviene entender cómo organiza la información y por qué su comportamiento difiere de un asistente conversacional convencional.</p>
+
+        <h3>1. El principio de Anclaje en Fuentes (Source Grounding)</h3>
+        <p>En un modelo de lenguaje tradicional, las respuestas provienen de los datos generales con los que fue entrenado. En NotebookLM, cada cuaderno actúa como un <strong>espacio aislado de conocimiento</strong>:</p>
+        <ul>
+          <li><strong>Fidelidad documental:</strong> La IA prioriza exclusivamente los documentos que has subido y activado en el panel izquierdo.</li>
+          <li><strong>Trazabilidad inmediata:</strong> Cada afirmación relevante incluye superíndices numéricos clicables (por ejemplo, <code>[1]</code>, <code>[2]</code>) que abren el fragmento exacto del documento original.</li>
+          <li><strong>Transparencia ante ausencias:</strong> Si preguntas algo que no aparece en tus fuentes, el sistema indica que los documentos proporcionados no contienen esa información en lugar de inventarla.</li>
+        </ul>
+
+        <h3>2. Los Tres Pilares de la Interfaz Interactiva</h3>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Panel</th>
+                <th>Ubicación</th>
+                <th>Función Principal</th>
+                <th>Interactividad Clave</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>1. Fuentes (Sources)</strong></td>
+                <td>Columna Izquierda</td>
+                <td>Almacena y gestiona la base documental del cuaderno.</td>
+                <td>Casillas de selección individual para incluir o excluir documentos en tiempo real sin borrarlos.</td>
+              </tr>
+              <tr>
+                <td><strong>2. Chat Central</strong></td>
+                <td>Columna Central</td>
+                <td>Diálogo analítico, consultas, resúmenes y comparación de textos.</td>
+                <td>Citas clicables, sugerencias dinámicas de seguimiento y botón «Guardar en nota».</td>
+              </tr>
+              <tr>
+                <td><strong>3. Studio</strong></td>
+                <td>Columna Derecha</td>
+                <td>Generación de artefactos estructurados, audio y mapas visuales.</td>
+                <td>Audio Overviews interactivos (modo Unirse), Mapas Mentales desplegables, Guías de estudio, Cronologías y Notas editables.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>3. Formatos de Fuentes Admitidos</h3>
+        <ul>
+          <li><strong>Documentos de texto:</strong> Archivos PDF, archivos de texto plano (<code>.txt</code>), archivos Markdown (<code>.md</code>) y documentos de Google Docs.</li>
+          <li><strong>Presentaciones:</strong> Diapositivas de Google Slides.</li>
+          <li><strong>Contenido Web y Multimedia:</strong> URLs de páginas web públicas y enlaces de vídeos de YouTube (analiza su transcripción).</li>
+          <li><strong>Archivos de Audio:</strong> Grabaciones de voz, entrevistas o clases en formato MP3 o WAV (transcripción e indexación automática).</li>
+          <li><strong>Texto pegado directamente:</strong> Fragmentos copiados desde cualquier aplicación.</li>
+        </ul>
+
+        <h3>4. Privacidad y Control de Datos</h3>
+        <p>Según la documentación oficial de Google sobre NotebookLM, tus fuentes personales, consultas y respuestas dentro de tu cuenta no se utilizan para entrenar los modelos fundacionales públicos de Google sin tu permiso explícito, lo que lo convierte en una herramienta adecuada para organizar apuntes, investigaciones y documentación interna.</p>
+      </div>
+
+      <div class="tab-footer-nav" data-tab-index="1"></div>
+    </section>
+
+    <!-- PESTAÑA 2: PROCEDIMIENTO PASO A PASO -->
+    <section class="tab-section" data-t="Procedimiento Paso a Paso" id="tab-procedimiento">
+      <div class="card">
+        <div class="section-header">
+          <span class="section-badge">Guía Operativa</span>
+          <h2>Procedimientos Paso a Paso de las Funciones Interactivas</h2>
+        </div>
+
+        <h3>Procedimiento 1: Creación del Cuaderno y Carga Selectiva de Fuentes</h3>
+        <ol>
+          <li><strong>Objetivo:</strong> Configurar un cuaderno limpio con fuentes verificadas y activar solo las necesarias para cada consulta.</li>
+          <li><strong>Acción 1 — Crear cuaderno:</strong> Accede a NotebookLM y pulsa en <strong>«Crear nuevo cuaderno»</strong>. <em>Motivo:</em> Cada tema o proyecto debe tener su propio entorno aislado para evitar contaminación entre materias.</li>
+          <li><strong>Acción 2 — Añadir fuentes:</strong> En el modal inicial (o pulsando <strong>«+ Añadir»</strong> en el panel Fuentes), selecciona el origen: subir archivo (PDF, TXT, MP3), Google Drive, Enlace (Web o YouTube) o Texto pegado.</li>
+          <li><strong>Acción 3 — Verificar el estado de indexación:</strong> Espera unos segundos hasta que desaparezca el indicador de carga junto al título de cada fuente. <em>Resultado esperado:</em> El icono del documento queda fijo y muestra su resumen automático al hacer clic sobre él.</li>
+          <li><strong>Acción 4 — Filtrado dinámico con casillas:</strong> Marca o desmarca las casillas situadas a la izquierda de cada fuente. <em>Motivo:</em> Permite interrogar un solo documento o cruzar información entre tres informes específicos sin eliminar el resto del cuaderno.</li>
+        </ol>
+
+        <h3>Procedimiento 2: Consulta Analítica y Auditoría de Citas en Línea</h3>
+        <ol>
+          <li><strong>Objetivo:</strong> Obtener respuestas precisas y comprobar en segundos que la IA no ha malinterpretado el texto original.</li>
+          <li><strong>Acción 1 — Formular una instrucción acotada:</strong> Escribe en el cuadro de chat central una pregunta concreta indicando formato de salida (lista, tabla comparativa o resumen ejecutivo).</li>
+          <li><strong>Acción 2 — Inspeccionar los números de cita:</strong> Localiza los superíndices numerados dentro de la respuesta generada.</li>
+          <li><strong>Acción 3 — Hacer clic o pasar el cursor sobre la cita:</strong> Al pulsar sobre un número de cita, el panel izquierdo abre automáticamente el documento exacto y resalta el párrafo literal de origen.</li>
+          <li><strong>Acción 4 — Consolidar el hallazgo:</strong> Si la respuesta es valiosa, pulsa <strong>«Guardar en nota»</strong> en la parte inferior del mensaje para fijarla en el panel Studio (el historial del chat central es volátil entre sesiones si no se guarda en notas).</li>
+        </ol>
+
+        <h3>Procedimiento 3: Audio Overview Interactivo (Modo «Unirse» / Join)</h3>
+        <ol>
+          <li><strong>Objetivo:</strong> Generar un diálogo de audio entre dos anfitriones de IA sobre tus documentos e interrumpir la conversación para hacer preguntas en tiempo real.</li>
+          <li><strong>Acción 1 — Generar el resumen de audio:</strong> En el panel derecho <strong>Studio</strong>, localiza la tarjeta <strong>«Resumen de audio» (Audio Overview)</strong>. Opcionalmente, pulsa <strong>«Personalizar»</strong> para indicar el enfoque deseado (por ejemplo: <em>«Céntrate solo en los riesgos financieros y explícales para principiantes»</em>) y luego pulsa <strong>«Generar»</strong>.</li>
+          <li><strong>Acción 2 — Iniciar el modo interactivo:</strong> Una vez generado el audio, pulsa el botón <strong>«Modo interactivo»</strong> (o <strong>«Unirse»</strong>).</li>
+          <li><strong>Acción 3 — Intervenir con tu voz:</strong> Mientras los anfitriones conversan, pulsa el botón <strong>«Unirse» (Join)</strong> y formula una pregunta en voz alta usando tu micrófono.</li>
+          <li><strong>Acción 4 — Escuchar la respuesta personalizada:</strong> Los anfitriones detendrán su guion, te saludarán, responderán tu duda basándose estrictamente en tus fuentes y retomarán el análisis del tema.</li>
+        </ol>
+
+        <h3>Procedimiento 4: Exploración y Expansión de Mapas Mentales Interactivos</h3>
+        <ol>
+          <li><strong>Objetivo:</strong> Visualizar la estructura jerárquica de tus documentos y navegar por sus conceptos sin redactar prompts complejos.</li>
+          <li><strong>Acción 1 — Crear el mapa:</strong> En el panel Chat o Studio, pulsa la opción <strong>«Mapa mental» (Mind Map)</strong>.</li>
+          <li><strong>Acción 2 — Expandir y contraer ramas:</strong> Haz clic en los nodos con indicador de despliegue para abrir subtemas y visualizar relaciones entre conceptos clave.</li>
+          <li><strong>Acción 3 — Consultar un nodo directamente:</strong> Pulsa sobre el texto de cualquier nodo terminal o intermedio. <em>Resultado esperado:</em> NotebookLM envía automáticamente una consulta al chat central explicando ese concepto específico dentro del contexto de tus fuentes.</li>
+        </ol>
+
+        <h3>Procedimiento 5: Conversión de Notas en Nuevas Fuentes</h3>
+        <ol>
+          <li><strong>Objetivo:</strong> Transformar tus propias síntesis y resúmenes acumulados en una fuente maestra consolidada.</li>
+          <li><strong>Acción 1 — Seleccionar notas en Studio:</strong> Marca una o varias notas guardadas en el panel derecho.</li>
+          <li><strong>Acción 2 — Ejecutar conversión:</strong> Pulsa el menú de opciones de las notas seleccionadas y elige <strong>«Convertir a fuente»</strong>.</li>
+          <li><strong>Resultado esperado:</strong> Aparece un nuevo documento en el panel izquierdo con tus síntesis compiladas, permitiendo desmarcar los archivos brutos originales y trabajar sobre una base depurada.</li>
+        </ol>
+      </div>
+
+      <div class="tab-footer-nav" data-tab-index="2"></div>
+    </section>
+
+    <!-- PESTAÑA 3: 10 EJEMPLOS PRÁCTICOS -->
+    <section class="tab-section" data-t="10 Ejemplos Prácticos" id="tab-ejemplos">
+      <div class="card">
+        <div class="section-header">
+          <span class="section-badge">Aplicación Inmediata</span>
+          <h2>10 Ejemplos Prácticos de Uso Real</h2>
+        </div>
+        <p>Cada ejemplo muestra qué fuentes cargar, qué instrucción aplicar y qué resultado interactivo esperar.</p>
+
+        <details class="accordion-item" open>
+          <summary>Ejemplo 1: Estudio de un manual técnico extenso en PDF</summary>
+          <div class="details-content">
+            <p><strong>Fuentes:</strong> Manual de usuario o normativa de 120 páginas en PDF.</p>
+            <p><strong>Acción interactiva:</strong> Generar una <em>Guía de estudio</em> en Studio y usar el <em>Mapa mental</em> para identificar los capítulos críticos.</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-label">Prompt Ejemplo 1</span>
+                <button class="copy-btn" type="button" data-copy="Extrae los 10 conceptos fundamentales de este manual, defínelos en lenguaje sencillo y cita exactamente la página o sección de origen en cada punto.">📋 Copiar</button>
+              </div>
+              <pre class="prompt-body">Extrae los 10 conceptos fundamentales de este manual, defínelos en lenguaje sencillo y cita exactamente la página o sección de origen en cada punto.</pre>
+            </div>
+          </div>
+        </details>
+
+        <details class="accordion-item">
+          <summary>Ejemplo 2: Comparativa de presupuestos o propuestas de proveedores</summary>
+          <div class="details-content">
+            <p><strong>Fuentes:</strong> 3 archivos PDF con cotizaciones comerciales distintas.</p>
+            <p><strong>Acción interactiva:</strong> Activar las 3 casillas de fuente simultáneamente y solicitar una matriz comparativa.</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-label">Prompt Ejemplo 2</span>
+                <button class="copy-btn" type="button" data-copy="Crea una tabla comparativa entre las 3 propuestas evaluando: coste total, plazos de entrega, garantías incluidas y exclusiones ocultas. Cita cada dato.">📋 Copiar</button>
+              </div>
+              <pre class="prompt-body">Crea una tabla comparativa entre las 3 propuestas evaluando: coste total, plazos de entrega, garantías incluidas y exclusiones ocultas. Cita cada dato.</pre>
+            </div>
+          </div>
+        </details>
+
+        <details class="accordion-item">
+          <summary>Ejemplo 3: Síntesis de conferencias largas en YouTube</summary>
+          <div class="details-content">
+            <p><strong>Fuentes:</strong> 4 enlaces de vídeos de YouTube sobre un mismo tema.</p>
+            <p><strong>Acción interactiva:</strong> Pedir puntos de acuerdo y contradicciones entre los ponentes.</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-label">Prompt Ejemplo 3</span>
+                <button class="copy-btn" type="button" data-copy="Identifica en qué tesis coinciden todos los vídeos cargados y en qué puntos existen posturas opuestas entre los ponentes.">📋 Copiar</button>
+              </div>
+              <pre class="prompt-body">Identifica en qué tesis coinciden todos los vídeos cargados y en qué puntos existen posturas opuestas entre los ponentes.</pre>
+            </div>
+          </div>
+        </details>
+
+        <details class="accordion-item">
+          <summary>Ejemplo 4: Repaso activo mediante Audio Overview Interactivo</summary>
+          <div class="details-content">
+            <p><strong>Fuentes:</strong> Apuntes de clase en Google Docs y diapositivas en Google Slides.</p>
+            <p><strong>Acción interactiva:</strong> Personalizar el Audio Overview para que actúe como tutor de examen y usar el botón <em>Unirse</em> para responder preguntas en voz alta.</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-label">Prompt Personalización Audio Ejemplo 4</span>
+                <button class="copy-btn" type="button" data-copy="Enfocad el episodio como un repaso dinámico para examen. Explicad los conceptos más difíciles con analogías cotidianas y plantead preguntas de reflexión.">📋 Copiar</button>
+              </div>
+              <pre class="prompt-body">Enfocad el episodio como un repaso dinámico para examen. Explicad los conceptos más difíciles con analogías cotidianas y plantead preguntas de reflexión.</pre>
+            </div>
+          </div>
+        </details>
+
+        <details class="accordion-item">
+          <summary>Ejemplo 5: Análisis de entrevistas grabadas en audio (MP3/WAV)</summary>
+          <div class="details-content">
+            <p><strong>Fuentes:</strong> 5 grabaciones de entrevistas a clientes o usuarios.</p>
+            <p><strong>Acción interactiva:</strong> Extraer patrones de dolor recurrentes con citas textuales de los entrevistados.</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-label">Prompt Ejemplo 5</span>
+                <button class="copy-btn" type="button" data-copy="Agrupa los problemas mencionados por los entrevistados por frecuencia de aparición e incluye una cita literal de cada grabación.">📋 Copiar</button>
+              </div>
+              <pre class="prompt-body">Agrupa los problemas mencionados por los entrevistados por frecuencia de aparición e incluye una cita literal de cada grabación.</pre>
+            </div>
+          </div>
+        </details>
+
+        <details class="accordion-item">
+          <summary>Ejemplo 6: Revisión de contratos o términos legales antes de firmar</summary>
+          <div class="details-content">
+            <p><strong>Fuentes:</strong> Borrador de contrato de servicios en PDF o Docs.</p>
+            <p><strong>Acción interactiva:</strong> Detectar cláusulas de penalización, renovación automática y obligaciones críticas.</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-label">Prompt Ejemplo 6</span>
+                <button class="copy-btn" type="button" data-copy="Lista todas las obligaciones económicas, plazos de preaviso, causas de rescisión y penalizaciones presentes en este contrato, citando la cláusula exacta.">📋 Copiar</button>
+              </div>
+              <pre class="prompt-body">Lista todas las obligaciones económicas, plazos de preaviso, causas de rescisión y penalizaciones presentes en este contrato, citando la cláusula exacta.</pre>
+            </div>
+          </div>
+        </details>
+
+        <details class="accordion-item">
+          <summary>Ejemplo 7: Creación de una cronología histórica o de proyecto</summary>
+          <div class="details-content">
+            <p><strong>Fuentes:</strong> Actas de reuniones, correos exportados y artículos web.</p>
+            <p><strong>Acción interactiva:</strong> Usar la herramienta <em>Cronología (Timeline)</em> del panel Studio para ordenar hitos por fecha.</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-label">Prompt Ejemplo 7</span>
+                <button class="copy-btn" type="button" data-copy="Construye una línea temporal estrictamente cronológica con fecha, evento ocurrido, responsables mencionados y documento fuente.">📋 Copiar</button>
+              </div>
+              <pre class="prompt-body">Construye una línea temporal estrictamente cronológica con fecha, evento ocurrido, responsables mencionados y documento fuente.</pre>
+            </div>
+          </div>
+        </details>
+
+        <details class="accordion-item">
+          <summary>Ejemplo 8: Preparación de un guion de podcast o vídeo educativo</summary>
+          <div class="details-content">
+            <p><strong>Fuentes:</strong> 6 artículos de investigación y estadísticas oficiales.</p>
+            <p><strong>Acción interactiva:</strong> Guardar bloques temáticos como notas en Studio y convertirlas en una fuente consolidada.</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-label">Prompt Ejemplo 8</span>
+                <button class="copy-btn" type="button" data-copy="Redacta una estructura de guion en 4 actos (gancho, problema, evidencia con datos citados y conclusión práctica) usando solo los datos de estas fuentes.">📋 Copiar</button>
+              </div>
+              <pre class="prompt-body">Redacta una estructura de guion en 4 actos (gancho, problema, evidencia con datos citados y conclusión práctica) usando solo los datos de estas fuentes.</pre>
+            </div>
+          </div>
+        </details>
+
+        <details class="accordion-item">
+          <summary>Ejemplo 9: Auditoría de coherencia entre normativa interna y operativa</summary>
+          <div class="details-content">
+            <p><strong>Fuentes:</strong> Política oficial de la empresa (PDF) + Guía operativa del equipo (Docs).</p>
+            <p><strong>Acción interactiva:</strong> Contrastar ambos documentos para detectar vacíos o contradicciones.</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-label">Prompt Ejemplo 9</span>
+                <button class="copy-btn" type="button" data-copy="Compara la política oficial con la guía operativa y señala cualquier procedimiento que falte en la guía o que contradiga la normativa.">📋 Copiar</button>
+              </div>
+              <pre class="prompt-body">Compara la política oficial con la guía operativa y señala cualquier procedimiento que falte en la guía o que contradiga la normativa.</pre>
+            </div>
+          </div>
+        </details>
+
+        <details class="accordion-item">
+          <summary>Ejemplo 10: Generación de preguntas frecuentes (FAQ) para soporte al cliente</summary>
+          <div class="details-content">
+            <p><strong>Fuentes:</strong> Documentación de producto y especificaciones técnicas.</p>
+            <p><strong>Acción interactiva:</strong> Pulsar <em>Preguntas frecuentes (FAQ)</em> en Studio y refinar el tono para usuarios no técnicos.</p>
+            <div class="prompt-card">
+              <div class="prompt-header">
+                <span class="prompt-label">Prompt Ejemplo 10</span>
+                <button class="copy-btn" type="button" data-copy="Genera las 15 preguntas más probables de un usuario principiante sobre este producto y respóndelas en máximo 3 líneas por respuesta con cita verificable.">📋 Copiar</button>
+              </div>
+              <pre class="prompt-body">Genera las 15 preguntas más probables de un usuario principiante sobre este producto y respóndelas en máximo 3 líneas por respuesta con cita verificable.</pre>
+            </div>
+          </div>
+        </details>
+      </div>
+
+      <div class="tab-footer-nav" data-tab-index="3"></div>
+    </section>
+
+    <!-- PESTAÑA 4: 10 PROYECTOS INTEGRADORES -->
+    <section class="tab-section" data-t="10 Proyectos Integradores" id="tab-proyectos">
+      <div class="card">
+        <div class="section-header">
+          <span class="section-badge">Práctica Avanzada</span>
+          <h2>10 Proyectos Integradores de Extremo a Extremo</h2>
+        </div>
+        <p>Estos proyectos combinan múltiples funciones interactivas (selección de fuentes, citas, Audio Overview, Mapas Mentales y conversión de notas) para resolver escenarios completos.</p>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Proyecto Integrador</th>
+                <th>Fuentes Requeridas</th>
+                <th>Flujo Interactivo Completo</th>
+                <th>Entregable Final</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>01</strong></td>
+                <td><strong>Academia Personal de Oposiciones</strong></td>
+                <td>Temario PDF + Leyes + Clases en YouTube</td>
+                <td>Mapa mental por tema → Guía de estudio → Audio Overview con modo Unirse para simulacro oral.</td>
+                <td>Cuaderno maestro de repaso auditivo y visual.</td>
+              </tr>
+              <tr>
+                <td><strong>02</strong></td>
+                <td><strong>Due Diligence de Mercado</strong></td>
+                <td>Informes sectoriales + Webs de competidores + Notas de prensa</td>
+                <td>Filtrado por casillas de competidor → Tabla DAFO citada → Documento resumen en Studio.</td>
+                <td>Informe ejecutivo comparativo verificable.</td>
+              </tr>
+              <tr>
+                <td><strong>03</strong></td>
+                <td><strong>Asistente de Tesis o Artículo Científico</strong></td>
+                <td>15–20 papers en PDF sobre un problema de investigación</td>
+                <td>Extracción de metodologías → Detección de vacíos de investigación → Conversión de notas a fuente.</td>
+                <td>Estado del arte estructurado con citas exactas.</td>
+              </tr>
+              <tr>
+                <td><strong>04</strong></td>
+                <td><strong>Onboarding Express de Nuevos Empleados</strong></td>
+                <td>Manuales internos + Vídeos de formación + Organigrama</td>
+                <td>FAQ automatizada → Mapa mental de procesos → Audio Overview de bienvenida personalizado.</td>
+                <td>Kit interactivo de incorporación empresarial.</td>
+              </tr>
+              <tr>
+                <td><strong>05</strong></td>
+                <td><strong>Investigación Periodística Documental</strong></td>
+                <td>Documentos filtrados + Actas públicas + Entrevistas MP3</td>
+                <td>Cronología de hechos → Cruce de declaraciones con citas numeradas → Verificación de contradicciones.</td>
+                <td>Dossier cronológico auditado punto por punto.</td>
+              </tr>
+              <tr>
+                <td><strong>06</strong></td>
+                <td><strong>Diseño de Curso Online Completo</strong></td>
+                <td>Bibliografía base + Apuntes propios + Tendencias web</td>
+                <td>Mapa mental del temario → Desglose por módulos en notas → Guiones de lecciones en Studio.</td>
+                <td>Currículo formativo estructurado y guionizado.</td>
+              </tr>
+              <tr>
+                <td><strong>07</strong></td>
+                <td><strong>Centro de Inteligencia de Voz del Cliente</strong></td>
+                <td>20 transcripciones de soporte + Encuestas TXT + Grabaciones</td>
+                <td>Agrupación de incidencias → Priorización por impacto → Nota consolidada convertida en fuente.</td>
+                <td>Hoja de ruta de mejoras de producto respaldada por datos.</td>
+              </tr>
+              <tr>
+                <td><strong>08</strong></td>
+                <td><strong>Preparación de Negociación Compleja</strong></td>
+                <td>Historial de acuerdos + Contratos previos + Propuesta actual</td>
+                <td>Comparativa de concesiones → Simulación de objeciones en Audio Interactivo → Lista de líneas rojas.</td>
+                <td>Dosier táctico de negociación con respaldo documental.</td>
+              </tr>
+              <tr>
+                <td><strong>09</strong></td>
+                <td><strong>Curaduría de Libros de No Ficción</strong></td>
+                <td>5 libros clave sobre hábitos, liderazgo o estrategia</td>
+                <td>Síntesis cruzada de principios → Mapa mental integrador → Audio debate entre los autores.</td>
+                <td>Manual práctico de aplicación personal.</td>
+              </tr>
+              <tr>
+                <td><strong>10</strong></td>
+                <td><strong>Base de Conocimiento Técnico (SOPs)</strong></td>
+                <td>Registros de incidencias + Manuales de equipos + Protocolos</td>
+                <td>Extracción de pasos de resolución → Lista de verificación por fallo → Exportación a Google Docs.</td>
+                <td>Manual operativo estándar (SOP) listo para equipo.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Plantilla Maestra para Ejecutar Cualquier Proyecto Integrador</h3>
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">Prompt Integrador Universal</span>
+            <button class="copy-btn" type="button" data-copy="Actúa como analista documental riguroso. Analiza exclusivamente las fuentes seleccionadas y genera: 1) Un resumen ejecutivo de 5 puntos clave; 2) Una tabla con los datos, fechas o métricas más relevantes; 3) Las principales lagunas o preguntas que quedan sin responder en los documentos. Incluye citas numeradas en cada afirmación.">📋 Copiar</button>
+          </div>
+          <pre class="prompt-body">Actúa como analista documental riguroso. Analiza exclusivamente las fuentes seleccionadas y genera: 1) Un resumen ejecutivo de 5 puntos clave; 2) Una tabla con los datos, fechas o métricas más relevantes; 3) Las principales lagunas o preguntas que quedan sin responder en los documentos. Incluye citas numeradas en cada afirmación.</pre>
+        </div>
+      </div>
+
+      <div class="tab-footer-nav" data-tab-index="4"></div>
+    </section>
+
+    <!-- PESTAÑA 5: 33 PREGUNTAS (Q&A) (ANTES DE ERRORES, DEFAULT PLEGADO) -->
+    <section class="tab-section" data-t="33 Preguntas (Q&A)" id="tab-qa">
+      <div class="card">
+        <div class="section-header">
+          <span class="section-badge">Evaluación Progresiva</span>
+          <h2>33 Preguntas y Respuestas (Q&amp;A) por Nivel de Dificultad</h2>
+        </div>
+        <p>Pon a prueba tu dominio de las funciones interactivas de NotebookLM. Por defecto todas las respuestas permanecen plegadas para fomentar el recuerdo activo.</p>
+
+        <div class="qa-toolbar">
+          <button class="btn-primary" id="expandAllQaBtn" type="button">+ Desplegar todas respuestas</button>
+          <button class="btn-secondary" id="collapseAllQaBtn" type="button">- Plegar todas las respuestas</button>
+        </div>
+
+        <!-- NIVEL 1: FUNDAMENTOS Y USO ESENCIAL (1-11) -->
+        <h3>Nivel 1: Fundamentos y Uso Esencial (Preguntas 1 a 11)</h3>
+
+        <details class="qa-item">
+          <summary>1. ¿Qué diferencia fundamentalmente a NotebookLM de un chatbot de IA generalista?</summary>
+          <div class="details-content">NotebookLM opera bajo el principio de anclaje en fuentes (<em>source grounding</em>): prioriza exclusivamente los documentos que tú cargas en cada cuaderno y respalda sus respuestas con citas numeradas clicables que enlazan al fragmento literal de origen.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>2. ¿Qué ocurre si le haces a NotebookLM una pregunta cuya respuesta no figura en tus fuentes?</summary>
+          <div class="details-content">El sistema está diseñado para indicar explícitamente que los documentos cargados no contienen información suficiente para responder, evitando inventar datos externos.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>3. ¿Cuáles son los tres paneles principales de la interfaz de NotebookLM?</summary>
+          <div class="details-content">El panel izquierdo de <strong>Fuentes</strong> (gestión documental), el panel central de <strong>Chat</strong> (consultas y citas en línea) y el panel derecho <strong>Studio</strong> (Audio Overviews, Mapas Mentales, Guías y Notas).</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>4. ¿Qué tipos de archivos y enlaces puedes cargar como fuentes en un cuaderno?</summary>
+          <div class="details-content">Archivos PDF, texto plano (.txt), Markdown (.md), Google Docs, Google Slides, URLs de páginas web públicas, enlaces de vídeos de YouTube, archivos de audio (MP3, WAV) y texto copiado directamente.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>5. ¿Para qué sirven las casillas de verificación junto a cada fuente en el panel izquierdo?</summary>
+          <div class="details-content">Permiten activar o desactivar dinámicamente qué fuentes debe consultar la IA en tu siguiente pregunta sin necesidad de eliminar los documentos del cuaderno.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>6. ¿Qué sucede cuando haces clic sobre un número de cita (ej. [1]) dentro de una respuesta?</summary>
+          <div class="details-content">NotebookLM abre automáticamente el visor de la fuente correspondiente en el panel izquierdo y resalta el pasaje exacto del texto en el que se basa esa afirmación.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>7. ¿Por qué es importante pulsar «Guardar en nota» tras obtener una respuesta útil en el chat?</summary>
+          <div class="details-content">Porque el historial del chat central es temporal entre sesiones; guardar una respuesta como nota la fija de forma permanente en el panel Studio para consultarla, editarla o reutilizarla más adelante.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>8. ¿Qué es un Audio Overview (Resumen de audio) en NotebookLM?</summary>
+          <div class="details-content">Es una conversación generada por IA entre dos anfitriones virtuales que analizan, debaten y resumen los puntos clave de tus fuentes en formato podcast.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>9. ¿Cómo funciona la integración con vídeos de YouTube?</summary>
+          <div class="details-content">Al pegar la URL de un vídeo público de YouTube, NotebookLM importa su transcripción textual y permite resumirla, citarla y cruzarla con otros documentos del cuaderno.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>10. ¿Qué ocurre cuando subes un archivo de audio (MP3 o WAV) como fuente?</summary>
+          <div class="details-content">NotebookLM transcribe automáticamente el contenido hablado del audio, lo indexa como texto consultable y permite obtener citas precisas de lo dicho en la grabación.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>11. ¿Tus documentos privados subidos a NotebookLM entrenan los modelos públicos de Google?</summary>
+          <div class="details-content">No. De acuerdo con la política oficial de privacidad de Google para NotebookLM, tus fuentes, consultas y respuestas personales no se utilizan para entrenar modelos públicos.</div>
+        </details>
+
+        <!-- NIVEL 2: FLUJO INTERACTIVO Y STUDIO (12-22) -->
+        <h3>Nivel 2: Flujo Interactivo y Panel Studio (Preguntas 12 a 22)</h3>
+
+        <details class="qa-item">
+          <summary>12. ¿Qué permite hacer el «Modo interactivo» (botón Unirse / Join) dentro de un Audio Overview?</summary>
+          <div class="details-content">Permite interrumpir en tiempo real la conversación de los dos anfitriones de IA, formular una pregunta con tu voz y recibir una respuesta inmediata basada en tus documentos antes de que retomen el programa.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>13. ¿Cómo puedes orientar el tema o el nivel técnico de un Audio Overview antes de generarlo?</summary>
+          <div class="details-content">Utilizando la opción <strong>«Personalizar»</strong> antes de pulsar Generar, donde puedes escribir instrucciones específicas sobre el público objetivo, los subtemas prioritarios o el enfoque deseado.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>14. ¿Qué función cumple un Mapa Mental interactivo en NotebookLM?</summary>
+          <div class="details-content">Organiza visualmente los temas y subtemas de tus fuentes en un diagrama ramificado desplegable; al hacer clic en cualquier nodo, lanza automáticamente una consulta explicativa en el chat central.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>15. ¿Qué diferencia hay entre una «Nota escrita por el usuario» y una «Respuesta guardada como nota» en Studio?</summary>
+          <div class="details-content">Las respuestas guardadas desde el chat conservan las citas originales y son de solo lectura para preservar su integridad documental, mientras que las notas creadas manualmente en Studio son editables libremente.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>16. ¿Qué artefactos preconfigurados ofrece el panel Studio con un solo clic?</summary>
+          <div class="details-content">Ofrece generación rápida de Guías de estudio, Documentos de resumen (Briefing Docs), Preguntas frecuentes (FAQ), Cronologías (Timelines), Índices y Audio Overviews.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>17. ¿Cómo se actualiza una fuente vinculada desde Google Docs o Google Slides si editas el archivo original en Drive?</summary>
+          <div class="details-content">Abriendo la fuente dentro del panel izquierdo de NotebookLM y pulsando el botón <strong>«Sincronizar con Google Drive»</strong> para reimportar los cambios realizados.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>18. ¿Qué ventaja ofrece convertir varias notas de Studio en una nueva fuente?</summary>
+          <div class="details-content">Permite destilar grandes volúmenes de documentos brutos en una síntesis limpia y curada, desactivar los archivos originales y continuar investigando sobre esa nueva base depurada.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>19. ¿Qué sucede si compartes un cuaderno con otro usuario en modo «Lector» frente a «Editor»?</summary>
+          <div class="details-content">Un usuario con permiso de <strong>Lector</strong> puede consultar el chat, explorar las fuentes y escuchar los resúmenes generados, pero no puede añadir ni borrar documentos ni modificar notas; un <strong>Editor</strong> tiene control total sobre fuentes y Studio.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>20. ¿Por qué es recomendable crear un cuaderno independiente por proyecto en lugar de mezclar temas distintos?</summary>
+          <div class="details-content">Porque evita interferencias semánticas entre documentos no relacionados, mejora la precisión de las citas y mantiene los Mapas Mentales y Audio Overviews enfocados en un único dominio.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>21. ¿Qué ocurre si pegas la URL de una página web protegida por muro de pago o inicio de sesión?</summary>
+          <div class="details-content">NotebookLM no puede saltar autenticaciones ni muros de pago; en esos casos fallará la importación o solo leerá el fragmento público previo al bloqueo.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>22. ¿Cómo puedes exportar el contenido generado en Studio fuera de NotebookLM?</summary>
+          <div class="details-content">Mediante las opciones de copia directa al portapapeles o exportando las notas directamente a un nuevo documento en Google Docs (y descargando el archivo de audio en formato WAV/MP3 para los Audio Overviews).</div>
+        </details>
+
+        <!-- NIVEL 3: ARQUITECTURA AVANZADA, LÍMITES Y OPTIMIZACIÓN (23-33) -->
+        <h3>Nivel 3: Arquitectura Avanzada, Límites y Optimización (Preguntas 23 a 33)</h3>
+
+        <details class="qa-item">
+          <summary>23. ¿Por qué un PDF escaneado como imagen sin capa OCR puede dar respuestas vacías o errores de lectura?</summary>
+          <div class="details-content">Porque NotebookLM necesita texto extraíble para indexar el contenido; si el PDF es una fotografía pura sin reconocimiento óptico de caracteres (OCR), no podrá leer los párrafos hasta que se procese con OCR.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>24. ¿Qué estrategia debes aplicar cuando necesitas analizar hojas de cálculo complejas con miles de filas numéricas?</summary>
+          <div class="details-content">NotebookLM destaca en síntesis semántica y textual, no como motor de cálculo matemático masivo; conviene exportar resúmenes tabulares limpios o estructurar los datos en Markdown/PDF con encabezados claros antes de importarlos.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>25. ¿Cómo diseñar un flujo de «SÍNTESIS EN CASCADA» para superar límites de volumen documental?</summary>
+          <div class="details-content">Agrupando documentos por bloques temáticos en cuadernos parciales, generando documentos resumen en cada uno, exportándolos y reuniendo únicamente esas síntesis maestras en un cuaderno integrador final.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>26. ¿Qué diferencia existe entre desmarcar una fuente y eliminarla del cuaderno?</summary>
+          <div class="details-content">Desmarcarla la excluye temporalmente del contexto activo del chat manteniendo su indexación intacta para reactivarla en un clic; eliminarla borra permanentemente el archivo y su índice del cuaderno.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>27. ¿Por qué un vídeo de YouTube recién publicado o sin subtítulos generados puede fallar al añadirse como fuente?</summary>
+          <div class="details-content">Porque NotebookLM depende de la disponibilidad de la pista de transcripción de YouTube; si el vídeo carece de subtítulos automáticos o manuales habilitados, no dispone de texto que indexar.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>28. ¿Cómo evitar que el chat mezcle criterios cuando comparas versiones antiguas y modernas de una misma normativa?</summary>
+          <div class="details-content">Nombrando explícitamente cada archivo con su fecha o versión antes de subirlo y pidiendo en el prompt que contraste expresamente el documento <code>[Versión A]</code> frente a <code>[Versión B]</code> citando ambos.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>29. ¿Qué ocurre en el modo interactivo de Audio Overview si tu pregunta abarca conceptos que no están en tus fuentes?</summary>
+          <div class="details-content">Los anfitriones señalarán durante la respuesta hablada que ese punto concreto no aparece cubierto en el material de referencia del cuaderno y reconducirán la respuesta hacia lo que sí está documentado.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>30. ¿Cuál es la mejor práctica para auditar un informe crítico generado por NotebookLM antes de presentarlo?</summary>
+          <div class="details-content">Verificar manualmente todas las citas numeradas de los datos cuantitativos, fechas y cláusulas legales, y solicitar explícitamente una segunda pasada pidiendo: <em>«Lista posibles interpretaciones alternativas o matices que existan en las fuentes»</em>.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>31. ¿Cómo aprovechar los Mapas Mentales cuando trabajas con más de 20 fuentes simultáneas?</summary>
+          <div class="details-content">Generando primero un Mapa Mental global para detectar los grandes ejes temáticos y luego desmarcando fuentes en el panel izquierdo para generar mapas específicos por subtema.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>32. ¿Qué papel juegan los formatos Markdown (.md) en la calidad de indexación de NotebookLM?</summary>
+          <div class="details-content">El formato Markdown proporciona jerarquías de títulos limpias (<code>#</code>, <code>##</code>, <code>###</code>) y listas estructuradas sin ruido visual de maquetación, lo que facilita una segmentación muy precisa de citas.</div>
+        </details>
+
+        <details class="qa-item">
+          <summary>33. ¿Cuál es el flujo completo recomendado para convertir un cuaderno de investigación en un producto formativo terminado?</summary>
+          <div class="details-content">1) Curar y etiquetar fuentes; 2) Explorar estructura con Mapa Mental; 3) Extraer tablas y evidencias con citas auditadas; 4) Guardar notas clave y convertirlas en fuente maestra; 5) Generar Guía de estudio y Audio Overview interactivo para validación final.</div>
+        </details>
+      </div>
+
+      <div class="tab-footer-nav" data-tab-index="5"></div>
+    </section>
+
+    <!-- PESTAÑA 6: ERRORES Y SOLUCIÓN DE PROBLEMAS -->
+    <section class="tab-section" data-t="Errores y Soluciones" id="tab-errores">
+      <div class="card">
+        <div class="section-header">
+          <span class="section-badge">Diagnóstico y Recuperación</span>
+          <h2>Errores Frecuentes y Solución de Problemas</h2>
+        </div>
+        <p>Consulta esta matriz de diagnóstico rápido cuando encuentres un bloqueo técnico o una respuesta inesperada.</p>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Síntoma / Error</th>
+                <th>Causa Real</th>
+                <th>Solución Paso a Paso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Error al importar URL web</strong></td>
+                <td>La web bloquea rastreadores automáticos, usa renderizado pesado en JavaScript o exige inicio de sesión/suscripción.</td>
+                <td>Abre la página en tu navegador, selecciona el texto del artículo, cópialo y añádelo mediante la opción <strong>«Texto pegado»</strong> o guárdalo como PDF limpio.</td>
+              </tr>
+              <tr>
+                <td><strong>Vídeo de YouTube no carga como fuente</strong></td>
+                <td>El vídeo es privado, muy reciente (sin transcripción procesada) o el autor desactivó los subtítulos.</td>
+                <td>Verifica que el vídeo sea público y tenga subtítulos activos en YouTube; si no los tiene, transcribe el audio previamente y súbelo como archivo TXT o MP3.</td>
+              </tr>
+              <tr>
+                <td><strong>PDF cargado pero la IA dice que está vacío</strong></td>
+                <td>El archivo es un documento escaneado como imagen pura sin capa de texto reconocible (OCR).</td>
+                <td>Pasa el PDF por una herramienta de reconocimiento óptico de caracteres (OCR) o ábrelo en Google Drive con Google Docs para extraer el texto antes de subirlo.</td>
+              </tr>
+              <tr>
+                <td><strong>Perdí la conversación del chat al cerrar la pestaña</strong></td>
+                <td>El historial del chat central en NotebookLM es volátil por diseño de sesión si no se guarda en Studio.</td>
+                <td>Acostúmbrate a pulsar <strong>«Guardar en nota»</strong> inmediatamente debajo de cada respuesta relevante que desees conservar.</td>
+              </tr>
+              <tr>
+                <td><strong>La respuesta mezcla datos de un documento que no quería usar</strong></td>
+                <td>Todas las casillas del panel izquierdo estaban marcadas por defecto.</td>
+                <td>Desmarca la casilla superior general en el panel Fuentes y selecciona únicamente los 1 o 2 documentos pertinentes para esa pregunta.</td>
+              </tr>
+              <tr>
+                <td><strong>El modo interactivo «Unirse» en Audio Overview no detecta mi voz</strong></td>
+                <td>Permiso de micrófono denegado en el navegador o dispositivo de entrada incorrecto.</td>
+                <td>Pulsa el icono de candado/ajustes junto a la barra de direcciones del navegador, permite el acceso al micrófono y recarga el cuaderno.</td>
+              </tr>
+              <tr>
+                <td><strong>Editaste un Google Doc en Drive pero NotebookLM cita la versión vieja</strong></td>
+                <td>NotebookLM toma una instantánea al importar y no sincroniza en segundo plano automáticamente.</td>
+                <td>Haz clic sobre el documento en el panel Fuentes y pulsa el botón <strong>«Sincronizar con Google Drive»</strong>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-footer-nav" data-tab-index="6"></div>
+    </section>
+
+    <!-- PESTAÑA 7: COMPENDIO DE PROMPTS -->
+    <section class="tab-section" data-t="Prompts" id="tab-prompts">
+      <div class="card">
+        <div class="section-header">
+          <span class="section-badge">Biblioteca Reutilizable</span>
+          <h2>Compendio Completo de Prompts y Dónde Emplearlos</h2>
+        </div>
+        <p>Aquí tienes reunidos todos los prompts del tutorial (incluidos los empleados en ejemplos y proyectos) junto con una descripción clara de cuándo y dónde aplicar cada uno.</p>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">1. Extracción de Conceptos Fundamentales con Citas</span>
+            <button class="copy-btn" type="button" data-copy="Extrae los 10 conceptos fundamentales de este manual, defínelos en lenguaje sencillo y cita exactamente la página o sección de origen en cada punto.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el <em>Chat central</em> (Ejemplo 1) al comenzar el estudio de un manual técnico, libro o normativa extensa.</p>
+          <pre class="prompt-body">Extrae los 10 conceptos fundamentales de este manual, defínelos en lenguaje sencillo y cita exactamente la página o sección de origen en cada punto.</pre>
+        </div>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">2. Matriz Comparativa de Propuestas o Proveedores</span>
+            <button class="copy-btn" type="button" data-copy="Crea una tabla comparativa entre las 3 propuestas evaluando: coste total, plazos de entrega, garantías incluidas y exclusiones ocultas. Cita cada dato.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el <em>Chat central</em> (Ejemplo 2) con varias fuentes activadas simultáneamente para evaluar presupuestos u ofertas.</p>
+          <pre class="prompt-body">Crea una tabla comparativa entre las 3 propuestas evaluando: coste total, plazos de entrega, garantías incluidas y exclusiones ocultas. Cita cada dato.</pre>
+        </div>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">3. Detección de Consensos y Contradicciones entre Fuentes</span>
+            <button class="copy-btn" type="button" data-copy="Identifica en qué tesis coinciden todos los vídeos cargados y en qué puntos existen posturas opuestas entre los ponentes.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el <em>Chat central</em> (Ejemplo 3) al analizar múltiples conferencias en YouTube, artículos o informes sobre un mismo tema.</p>
+          <pre class="prompt-body">Identifica en qué tesis coinciden todos los vídeos cargados y en qué puntos existen posturas opuestas entre los ponentes.</pre>
+        </div>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">4. Personalización de Audio Overview como Tutor de Examen</span>
+            <button class="copy-btn" type="button" data-copy="Enfocad el episodio como un repaso dinámico para examen. Explicad los conceptos más difíciles con analogías cotidianas y plantead preguntas de reflexión.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el panel <em>Studio → Resumen de audio → Personalizar</em> (Ejemplo 4) antes de iniciar el modo interactivo «Unirse».</p>
+          <pre class="prompt-body">Enfocad el episodio como un repaso dinámico para examen. Explicad los conceptos más difíciles con analogías cotidianas y plantead preguntas de reflexión.</pre>
+        </div>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">5. Agrupación de Patrones en Entrevistas de Audio</span>
+            <button class="copy-btn" type="button" data-copy="Agrupa los problemas mencionados por los entrevistados por frecuencia de aparición e incluye una cita literal de cada grabación.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el <em>Chat central</em> (Ejemplo 5) tras subir grabaciones MP3/WAV de entrevistas a usuarios o clientes.</p>
+          <pre class="prompt-body">Agrupa los problemas mencionados por los entrevistados por frecuencia de aparición e incluye una cita literal de cada grabación.</pre>
+        </div>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">6. Auditoría de Cláusulas y Riesgos Contractuales</span>
+            <button class="copy-btn" type="button" data-copy="Lista todas las obligaciones económicas, plazos de preaviso, causas de rescisión y penalizaciones presentes en este contrato, citando la cláusula exacta.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el <em>Chat central</em> (Ejemplo 6) para revisar borradores de contratos, pólizas o condiciones de servicio.</p>
+          <pre class="prompt-body">Lista todas las obligaciones económicas, plazos de preaviso, causas de rescisión y penalizaciones presentes en este contrato, citando la cláusula exacta.</pre>
+        </div>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">7. Construcción de Línea Temporal Verificable</span>
+            <button class="copy-btn" type="button" data-copy="Construye una línea temporal estrictamente cronológica con fecha, evento ocurrido, responsables mencionados y documento fuente.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el <em>Chat central</em> (Ejemplo 7) para reconstruir la evolución cronológica de un proyecto, caso legal o investigación.</p>
+          <pre class="prompt-body">Construye una línea temporal estrictamente cronológica con fecha, evento ocurrido, responsables mencionados y documento fuente.</pre>
+        </div>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">8. Estructura de Guion Educativo Basado en Evidencia</span>
+            <button class="copy-btn" type="button" data-copy="Redacta una estructura de guion en 4 actos (gancho, problema, evidencia con datos citados y conclusión práctica) usando solo los datos de estas fuentes.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el <em>Chat central</em> (Ejemplo 8) para transformar artículos técnicos en guiones de vídeo o podcast.</p>
+          <pre class="prompt-body">Redacta una estructura de guion en 4 actos (gancho, problema, evidencia con datos citados y conclusión práctica) usando solo los datos de estas fuentes.</pre>
+        </div>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">9. Auditoría de Coherencia Normativa vs. Operativa</span>
+            <button class="copy-btn" type="button" data-copy="Compara la política oficial con la guía operativa y señala cualquier procedimiento que falte en la guía o que contradiga la normativa.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el <em>Chat central</em> (Ejemplo 9) para detectar discrepancias entre documentos rectores y manuales de ejecución.</p>
+          <pre class="prompt-body">Compara la política oficial con la guía operativa y señala cualquier procedimiento que falte en la guía o que contradiga la normativa.</pre>
+        </div>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">10. Generación de FAQ Concisas para Principiantes</span>
+            <button class="copy-btn" type="button" data-copy="Genera las 15 preguntas más probables de un usuario principiante sobre este producto y respóndelas en máximo 3 líneas por respuesta con cita verificable.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el <em>Chat central</em> (Ejemplo 10) para crear bases de ayuda rápida a partir de documentación técnica.</p>
+          <pre class="prompt-body">Genera las 15 preguntas más probables de un usuario principiante sobre este producto y respóndelas en máximo 3 líneas por respuesta con cita verificable.</pre>
+        </div>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">11. Prompt Integrador Universal para Proyectos Completos</span>
+            <button class="copy-btn" type="button" data-copy="Actúa como analista documental riguroso. Analiza exclusivamente las fuentes seleccionadas y genera: 1) Un resumen ejecutivo de 5 puntos clave; 2) Una tabla con los datos, fechas o métricas más relevantes; 3) Las principales lagunas o preguntas que quedan sin responder en los documentos. Incluye citas numeradas en cada afirmación.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el <em>Chat central</em> (Sección Proyectos Integradores) como primer paso de diagnóstico global antes de crear notas y mapas mentales.</p>
+          <pre class="prompt-body">Actúa como analista documental riguroso. Analiza exclusivamente las fuentes seleccionadas y genera: 1) Un resumen ejecutivo de 5 puntos clave; 2) Una tabla con los datos, fechas o métricas más relevantes; 3) Las principales lagunas o preguntas que quedan sin responder en los documentos. Incluye citas numeradas en cada afirmación.</pre>
+        </div>
+
+        <div class="prompt-card">
+          <div class="prompt-header">
+            <span class="prompt-label">12. Auditoría Crítica de Matices y Contrapuntos</span>
+            <button class="copy-btn" type="button" data-copy="Revisa tu respuesta anterior y lista todas las excepciones, matices, condiciones límite o interpretaciones alternativas que aparezcan en los documentos fuente.">📋 Copiar</button>
+          </div>
+          <p><strong>Dónde se emplea:</strong> En el <em>Chat central</em> (Pregunta 30 de Q&amp;A) como segunda pasada de verificación antes de dar por definitivo un informe crítico.</p>
+          <pre class="prompt-body">Revisa tu respuesta anterior y lista todas las excepciones, matices, condiciones límite o interpretaciones alternativas que aparezcan en los documentos fuente.</pre>
+        </div>
+      </div>
+
+      <div class="tab-footer-nav" data-tab-index="7"></div>
+    </section>
+
+    <!-- PESTAÑA 8: GLOSARIO, RESUMEN Y FUENTES -->
+    <section class="tab-section" data-t="Glosario y Fuentes" id="tab-glosario">
+      <div class="card">
+        <div class="section-header">
+          <span class="section-badge">Referencia Rápida</span>
+          <h2>Glosario Técnico, Resumen Ejecutivo y Fuentes Oficiales</h2>
+        </div>
+
+        <h3>Glosario Esencial de NotebookLM</h3>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Término</th>
+                <th>Definición Clara</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Source Grounding (Anclaje en Fuentes)</strong></td>
+                <td>Mecanismo por el cual la IA restringe sus respuestas al contenido de los documentos cargados por el usuario, minimizando invenciones externas.</td>
+              </tr>
+              <tr>
+                <td><strong>Cita en Línea (Inline Citation)</strong></td>
+                <td>Marcador numérico clicable dentro de una respuesta que abre el fragmento literal exacto del documento original que respalda esa afirmación.</td>
+              </tr>
+              <tr>
+                <td><strong>Audio Overview (Resumen de Audio)</strong></td>
+                <td>Episodio de audio conversacional generado por IA entre dos voces anfitrionas que sintetizan y debaten las fuentes del cuaderno.</td>
+              </tr>
+              <tr>
+                <td><strong>Modo Interactivo / Unirse (Join)</strong></td>
+                <td>Función dentro del Audio Overview que permite al usuario hablar por micrófono en directo para hacer preguntas a los anfitriones de IA.</td>
+              </tr>
+              <tr>
+                <td><strong>Mapa Mental (Mind Map)</strong></td>
+                <td>Representación visual ramificada e interactiva de los conceptos principales y subtemas extraídos de las fuentes seleccionadas.</td>
+              </tr>
+              <tr>
+                <td><strong>Panel Studio</strong></td>
+                <td>Espacio derecho de la interfaz donde se generan y almacenan notas, guías de estudio, cronologías, preguntas frecuentes y resúmenes de audio.</td>
+              </tr>
+              <tr>
+                <td><strong>Conversión de Nota a Fuente</strong></td>
+                <td>Acción que transforma una o varias notas acumuladas en Studio en un nuevo documento indexado dentro del panel izquierdo de Fuentes.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Resumen Ejecutivo en 5 Reglas de Oro</h3>
+        <ol>
+          <li><strong>Un cuaderno por dominio:</strong> Separa cada proyecto o asignatura en su propio cuaderno para evitar ruido documental.</li>
+          <li><strong>Filtra antes de preguntar:</strong> Usa las casillas del panel Fuentes para acotar qué documentos intervienen en cada consulta.</li>
+          <li><strong>Audita siempre las citas:</strong> Haz clic en los números de cita para verificar datos críticos en su párrafo original.</li>
+          <li><strong>Guarda en Studio lo valioso:</strong> Convierte las mejores respuestas del chat en notas permanentes o en nuevas fuentes consolidadas.</li>
+          <li><strong>Combina formatos cognitivos:</strong> Usa el Mapa Mental para ver el bosque, el Chat para los detalles y el Audio Interactivo para consolidar mediante diálogo.</li>
+        </ol>
+
+        <h3>Fuentes y Documentación Oficial</h3>
+        <div class="url-action-box">
+          <div class="url-info">
+            <span class="url-title">NotebookLM — Plataforma Oficial de Google</span>
+            <span class="url-raw">https://notebooklm.google.com</span>
+          </div>
+          <div class="url-buttons">
+            <button class="copy-btn" type="button" data-copy="https://notebooklm.google.com">📋 Copiar URL</button>
+            <button class="open-link-btn" type="button" data-url="https://notebooklm.google.com">Abrir enlace en nueva ventana ↗</button>
+          </div>
+        </div>
+
+        <div class="url-action-box">
+          <div class="url-info">
+            <span class="url-title">Centro de Ayuda Oficial de NotebookLM (Google Support)</span>
+            <span class="url-raw">https://support.google.com/notebooklm</span>
+          </div>
+          <div class="url-buttons">
+            <button class="copy-btn" type="button" data-copy="https://support.google.com/notebooklm">📋 Copiar URL</button>
+            <button class="open-link-btn" type="button" data-url="https://support.google.com/notebooklm">Abrir enlace en nueva ventana ↗</button>
+          </div>
+        </div>
+
+        <div class="url-action-box">
+          <div class="url-info">
+            <span class="url-title">Blog Oficial de Google — Novedades de NotebookLM</span>
+            <span class="url-raw">https://blog.google/technology/ai/notebooklm-audio-overviews/</span>
+          </div>
+          <div class="url-buttons">
+            <button class="copy-btn" type="button" data-copy="https://blog.google/technology/ai/notebooklm-audio-overviews/">📋 Copiar URL</button>
+            <button class="open-link-btn" type="button" data-url="https://blog.google/technology/ai/notebooklm-audio-overviews/">Abrir enlace en nueva ventana ↗</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-footer-nav" data-tab-index="8"></div>
+    </section>
+
+    <!-- PESTAÑA 9: CRÉDITOS -->
+    <section class="tab-section" data-t="Créditos" id="tab-creditos">
+      <div class="card">
+        <div class="section-header">
+          <span class="section-badge">Autoría y Edición</span>
+          <h2>CRÉDITOS</h2>
+        </div>
+
+        <!-- Misma plantilla SVG animada compartida con INICIO -->
+        <div class="svg-stage-wrapper" id="creditsSvgContainer" role="img" aria-label="Ilustración animada de NotebookLM conectando fuentes documentales con citas verificables, Audio Overview interactivo, Mapas Mentales y el Panel Studio"></div>
+
+        <p><strong>Descripción de la ilustración:</strong> Representación vectorial multicapa del ecosistema interactivo de NotebookLM: cuatro nodos de conocimiento (Citas Exactas, Modo Unirse de Audio, Mapas Mentales y Panel Studio) convergen mediante flujos de datos verificados hacia el núcleo central de síntesis documental con ecualizador dinámico.</p>
+
+        <div class="credits-author-highlight">Rubén Sbarsky</div>
+        <p><strong>Autor del tutorial</strong></p>
+
+        <div class="pedagogy-box" style="margin-top: 14px;">
+          <p><strong>Información de la edición:</strong></p>
+          <ul>
+            <li><strong>Versión del documento:</strong> V001 (<code>tutorial_funciones_interactivas_notebooklm_V001.html</code>)</li>
+            <li><strong>Fecha y hora de creación:</strong> 19/11/2026 — 21:19:04</li>
+            <li><strong>Arquitectura técnica:</strong> Archivo HTML5 autónomo, sin dependencias externas, optimizado para lectura móvil (360 px+) e impresión A4 vertical.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tab-footer-nav" data-tab-index="9"></div>
+    </section>
+
+  </main>
+
+  <!-- Botones Flotantes Desplazables (Draggable) -->
+  <button class="floating-draggable" id="floatHomeBtn" type="button" aria-label="Ir a Inicio (arrastrable)" title="Ir a Inicio (puedes arrastrar este botón)">🏠 Inicio</button>
+  <button class="floating-draggable" id="floatTopBtn" type="button" aria-label="Subir al comienzo de la pestaña actual (arrastrable)" title="Subir arriba (puedes arrastrar este botón)">⬆️ Arriba</button>
+
+  <!-- Notificación Toast -->
+  <div id="toastBanner" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      /* =====================================================================
+         1. ESTADO CENTRAL Y PERSISTENCIA SEGURA
+         ===================================================================== */
+      const STORAGE_KEY = "notebooklm_tutorial_v001_state";
+      const DEFAULT_STATE = {
+        activeTab: 0,
+        fontSize: 16,
+        theme: "dark",
+        checks: {}
+      };
+
+      function loadState() {
+        try {
+          const raw = window.localStorage.getItem(STORAGE_KEY);
+          if (!raw) return Object.assign({}, DEFAULT_STATE);
+          const parsed = JSON.parse(raw);
+          return Object.assign({}, DEFAULT_STATE, parsed, {
+            checks: parsed.checks || {}
+          });
+        } catch (err) {
+          return Object.assign({}, DEFAULT_STATE);
+        }
+      }
+
+      function saveState(state) {
+        try {
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (err) {
+          /* Silencioso si localStorage está bloqueado */
+        }
+      }
+
+      const appState = loadState();
+
+      /* =====================================================================
+         2. NOTIFICACIONES VISUALES (SIN ALERT NI CONFIRM)
+         ===================================================================== */
+      const toastEl = document.getElementById("toastBanner");
+      let toastTimer = null;
+
+      function showToast(message) {
+        if (!toastEl) return;
+        toastEl.textContent = message;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          toastEl.classList.remove("show");
+        }, 2600);
+      }
+
+      /* =====================================================================
+         3. MONTAJE DEL LOGOTIPO Y DEL SVG HERO ANIMADO (PLANTILLA ÚNICA)
+         ===================================================================== */
+      function mountBrandLogos() {
+        const tpl = document.getElementById("brandLogoTemplate");
+        if (!tpl) return;
+        const navSlot = document.getElementById("navLogoSlot");
+        const heroSlot = document.getElementById("heroLogoSlot");
+        if (navSlot) navSlot.appendChild(tpl.content.cloneNode(true));
+        if (heroSlot) heroSlot.appendChild(tpl.content.cloneNode(true));
+      }
+
+      const heroMasterSource = document.getElementById("heroSvgMasterSource");
+      const heroSvgTemplateString = heroMasterSource ? heroMasterSource.innerHTML.trim() : "";
+      if (heroMasterSource && heroMasterSource.parentNode) {
+        heroMasterSource.parentNode.removeChild(heroMasterSource);
+      }
+
+      let svgInstanceCounter = 0;
+
+      function buildUniqueSvgMarkup(rawSvg, suffix) {
+        const ids = ["bgRadial", "coreHalo", "cardGrad", "neonGlow"];
+        let output = rawSvg;
+        ids.forEach(function (baseId) {
+          const uniqueId = baseId + "_" + suffix;
+          output = output.replace(new RegExp('id="' + baseId + '"', "g"), 'id="' + uniqueId + '"');
+          output = output.replace(new RegExp("url\\(#" + baseId + "\\)", "g"), "url(#" + uniqueId + ")");
+        });
+        return output;
+      }
+
+      function buildSvgDataFallback(rawSvg) {
+        const encoded = encodeURIComponent(rawSvg);
+        return '<img src="data:image/svg+xml;utf8,' + encoded + '" alt="Ilustración de NotebookLM" />';
+      }
+
+      function mountHeroSvgInContainer(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container || !heroSvgTemplateString) return;
+        svgInstanceCounter += 1;
+        const suffix = containerId + "_" + svgInstanceCounter;
+        try {
+          container.innerHTML = buildUniqueSvgMarkup(heroSvgTemplateString, suffix);
+          const mountedSvg = container.querySelector("svg");
+          if (!mountedSvg) {
+            container.innerHTML = buildSvgDataFallback(heroSvgTemplateString);
+          }
+        } catch (err) {
+          container.innerHTML = buildSvgDataFallback(heroSvgTemplateString);
+        }
+      }
+
+      function verifyVisibleSvgContainers() {
+        const heroSec = document.getElementById("tab-inicio");
+        const credSec = document.getElementById("tab-creditos");
+        if (heroSec && heroSec.classList.contains("active")) {
+          const heroBox = document.getElementById("heroSvgContainer");
+          if (heroBox && !heroBox.querySelector("svg, img")) {
+            mountHeroSvgInContainer("heroSvgContainer");
+          }
+        }
+        if (credSec && credSec.classList.contains("active")) {
+          const credBox = document.getElementById("creditsSvgContainer");
+          if (credBox && !credBox.querySelector("svg, img")) {
+            mountHeroSvgInContainer("creditsSvgContainer");
+          }
+        }
+      }
+
+      /* =====================================================================
+         4. NAVEGACIÓN POR PESTAÑAS, MENÚ SÁNDWICH ÍNDICE Y PIE DE PESTAÑA
+         ===================================================================== */
+      const sections = Array.from(document.querySelectorAll(".tab-section"));
+      const navChipsContainer = document.getElementById("navChipsContainer");
+      const drawerEl = document.getElementById("dr");
+      const menuBtn = document.getElementById("mb");
+
+      function toggleDrawer(forceState) {
+        const willOpen = typeof forceState === "boolean" ? forceState : !drawerEl.classList.contains("o");
+        drawerEl.classList.toggle("o", willOpen);
+        menuBtn.setAttribute("aria-expanded", String(willOpen));
+      }
+
+      function scrollCurrentTabToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function goToTab(index) {
+        const safeIndex = Math.max(0, Math.min(sections.length - 1, index));
+        appState.activeTab = safeIndex;
+        saveState(appState);
+
+        sections.forEach(function (sec, idx) {
+          sec.classList.toggle("active", idx === safeIndex);
+        });
+
+        const chips = Array.from(navChipsContainer.querySelectorAll(".chip"));
+        chips.forEach(function (chip, idx) {
+          const isActive = idx === safeIndex;
+          chip.classList.toggle("active", isActive);
+          chip.setAttribute("aria-selected", String(isActive));
+          if (isActive && chip.scrollIntoView) {
+            chip.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+          }
+        });
+
+        const drawerLinks = Array.from(drawerEl.querySelectorAll("a"));
+        drawerLinks.forEach(function (link, idx) {
+          link.classList.toggle("on", idx === safeIndex);
+        });
+
+        if (safeIndex === 0) {
+          mountHeroSvgInContainer("heroSvgContainer");
+        } else if (safeIndex === sections.length - 1) {
+          mountHeroSvgInContainer("creditsSvgContainer");
+        }
+
+        scrollCurrentTabToTop();
+        updateReadingProgress();
+      }
+
+      function buildNavigationAndIndex() {
+        const header = document.createElement("div");
+        header.className = "drawer-header";
+        header.innerHTML = '<span>Índice del Tutorial</span><span>10 secciones</span>';
+        drawerEl.appendChild(header);
+
+        sections.forEach(function (sec, idx) {
+          const label = sec.dataset.t || (sec.querySelector("h2") ? sec.querySelector("h2").textContent : "Sección");
+
+          /* Chip en barra superior */
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.className = "chip";
+          chip.setAttribute("role", "tab");
+          chip.textContent = label;
+          chip.addEventListener("click", function () {
+            goToTab(idx);
+          });
+          navChipsContainer.appendChild(chip);
+
+          /* Entrada en panel lateral Índice */
+          const link = document.createElement("a");
+          link.href = "#" + sec.id;
+          link.textContent = (idx > 0 ? idx + ". " : "") + label;
+          link.addEventListener("click", function (ev) {
+            ev.preventDefault();
+            goToTab(idx);
+            toggleDrawer(false);
+          });
+          drawerEl.appendChild(link);
+
+          /* Botones fijo Anterior / Siguiente al pie de cada pestaña */
+          const footerNav = sec.querySelector(".tab-footer-nav");
+          if (footerNav) {
+            if (idx > 0) {
+              const prevTitle = sections[idx - 1].dataset.t || "Anterior";
+              const prevBtn = document.createElement("button");
+              prevBtn.type = "button";
+              prevBtn.className = "nav-step-btn btn-prev";
+              prevBtn.textContent = "← Anterior: " + prevTitle;
+              prevBtn.addEventListener("click", function () {
+                goToTab(idx - 1);
+              });
+              footerNav.appendChild(prevBtn);
+            }
+
+            if (idx < sections.length - 1) {
+              const nextTitle = sections[idx + 1].dataset.t || "Siguiente";
+              const nextBtn = document.createElement("button");
+              nextBtn.type = "button";
+              nextBtn.className = "nav-step-btn btn-next";
+              nextBtn.textContent = "Siguiente: " + nextTitle + " →";
+              nextBtn.addEventListener("click", function () {
+                goToTab(idx + 1);
+              });
+              footerNav.appendChild(nextBtn);
+            }
+          }
+        });
+      }
+
+      /* Eventos del menú sándwich */
+      menuBtn.addEventListener("click", function () {
+        toggleDrawer();
+      });
+
+      const homeIndexBtn = document.getElementById("ix");
+      if (homeIndexBtn) {
+        homeIndexBtn.addEventListener("click", function () {
+          toggleDrawer(true);
+        });
+      }
+
+      const brandNavBtn = document.getElementById("brandNavBtn");
+      if (brandNavBtn) {
+        brandNavBtn.addEventListener("click", function () {
+          goToTab(0);
+          toggleDrawer(false);
+        });
+      }
+
+      document.addEventListener("keydown", function (ev) {
+        if (ev.key === "Escape") {
+          toggleDrawer(false);
+        }
+      });
+
+      document.addEventListener("click", function (ev) {
+        if (!ev.target.closest("#dr, #mb, #ix")) {
+          toggleDrawer(false);
+        }
+      });
+
+      /* =====================================================================
+         5. CONTROLES DE 33 PREGUNTAS (Q&A): DESPLEGAR Y PLEGAR TODAS
+         ===================================================================== */
+      const expandAllQaBtn = document.getElementById("expandAllQaBtn");
+      const collapseAllQaBtn = document.getElementById("collapseAllQaBtn");
+
+      if (expandAllQaBtn) {
+        expandAllQaBtn.addEventListener("click", function () {
+          const items = document.querySelectorAll("#tab-qa details.qa-item");
+          items.forEach(function (item) {
+            item.open = true;
+          });
+          showToast("33 respuestas desplegadas");
+        });
+      }
+
+      if (collapseAllQaBtn) {
+        collapseAllQaBtn.addEventListener("click", function () {
+          const items = document.querySelectorAll("#tab-qa details.qa-item");
+          items.forEach(function (item) {
+            item.open = false;
+          });
+          showToast("33 respuestas plegadas");
+        });
+      }
+
+      /* =====================================================================
+         6. COPIADO AL PORTAPAPELES Y APERTURA SEGURA DE ENLACES EN NUEVA VENTANA
+         ===================================================================== */
+      function copyTextSafely(textToCopy) {
+        try {
+          const tempArea = document.createElement("textarea");
+          tempArea.value = textToCopy;
+          tempArea.setAttribute("readonly", "");
+          tempArea.style.position = "fixed";
+          tempArea.style.opacity = "0";
+          document.body.appendChild(tempArea);
+          tempArea.select();
+          tempArea.setSelectionRange(0, tempArea.value.length);
+          const success = document.execCommand("copy");
+          document.body.removeChild(tempArea);
+          if (success) {
+            showToast("✅ Copiado al portapapeles");
+            return;
+          }
+        } catch (err) {
+          /* Fallback abajo */
+        }
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(textToCopy).then(function () {
+            showToast("✅ Copiado al portapapeles");
+          }).catch(function () {
+            showToast("⚠️ Selecciona el texto manualmente para copiar");
+          });
+        } else {
+          showToast("⚠️ Selecciona el texto manualmente para copiar");
+        }
+      }
+
+      document.addEventListener("click", function (ev) {
+        const copyBtn = ev.target.closest(".copy-btn");
+        if (copyBtn) {
+          const text = copyBtn.getAttribute("data-copy") || "";
+          copyTextSafely(text);
+          return;
+        }
+
+        const openLinkBtn = ev.target.closest(".open-link-btn");
+        if (openLinkBtn) {
+          const targetUrl = openLinkBtn.getAttribute("data-url");
+          if (targetUrl) {
+            window.open(targetUrl, "_blank", "noopener,noreferrer");
+            showToast("Abriendo enlace en nueva ventana...");
+          }
+        }
+      });
+
+      /* =====================================================================
+         7. BUSCADOR INTERNO EN TIEMPO REAL
+         ===================================================================== */
+      const searchInput = document.getElementById("globalSearchInput");
+      const searchResultsPanel = document.getElementById("searchResultsPanel");
+      const searchResultsContent = document.getElementById("searchResultsContent");
+
+      function runInternalSearch(queryText) {
+        const term = queryText.trim().toLowerCase();
+        if (term.length < 2) {
+          searchResultsPanel.classList.remove("visible");
+          searchResultsContent.innerHTML = "";
+          return;
+        }
+
+        const matches = [];
+        sections.forEach(function (sec, idx) {
+          const title = sec.dataset.t || "Sección";
+          const blocks = Array.from(sec.querySelectorAll("p, li, summary, td, pre"));
+          blocks.forEach(function (block) {
+            const txt = block.textContent.trim();
+            if (txt.toLowerCase().includes(term)) {
+              matches.push({ tabIndex: idx, tabTitle: title, snippet: txt.slice(0, 140) });
+            }
+          });
+        });
+
+        searchResultsPanel.classList.add("visible");
+        if (matches.length === 0) {
+          searchResultsContent.innerHTML = '<p style="margin:0;">No se encontraron coincidencias para <strong>' + term.replace(/</g, "&lt;") + "</strong>.</p>";
+          return;
+        }
+
+        const limited = matches.slice(0, 8);
+        let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><strong>' + matches.length + ' coincidencias encontradas</strong><button type="button" class="tool-btn" id="closeSearchBtn">Cerrar ✕</button></div>';
+        limited.forEach(function (item) {
+          html += '<div class="search-hit" data-goto="' + item.tabIndex + '"><div style="font-size:0.78rem;color:var(--accent);font-weight:700;">' + item.tabTitle + '</div><div style="font-size:0.86rem;">' + item.snippet.replace(/</g, "&lt;") + "...</div></div>";
+        });
+        searchResultsContent.innerHTML = html;
+
+        const closeBtn = document.getElementById("closeSearchBtn");
+        if (closeBtn) {
+          closeBtn.addEventListener("click", function () {
+            searchResultsPanel.classList.remove("visible");
+          });
+        }
+
+        Array.from(searchResultsContent.querySelectorAll(".search-hit")).forEach(function (hit) {
+          hit.addEventListener("click", function () {
+            const targetIdx = parseInt(hit.getAttribute("data-goto"), 10);
+            goToTab(targetIdx);
+            searchResultsPanel.classList.remove("visible");
+          });
+        });
+      }
+
+      if (searchInput) {
+        searchInput.addEventListener("input", function () {
+          runInternalSearch(searchInput.value);
+        });
+      }
+
+      /* =====================================================================
+         8. TAMAÑO DE LETRA, TEMA OSCURO/CLARO Y CHECKLIST
+         ===================================================================== */
+      function applyFontSize(size) {
+        const clamped = Math.max(14, Math.min(21, size));
+        appState.fontSize = clamped;
+        document.documentElement.style.setProperty("--base-font-size", clamped + "px");
+        saveState(appState);
+      }
+
+      function applyTheme(themeName) {
+        const isLight = themeName === "light";
+        document.documentElement.classList.toggle("theme-light", isLight);
+        appState.theme = isLight ? "light" : "dark";
+        saveState(appState);
+      }
+
+      document.getElementById("fontDecBtn").addEventListener("click", function () {
+        applyFontSize(appState.fontSize - 1);
+        showToast("Tamaño de texto: " + appState.fontSize + "px");
+      });
+
+      document.getElementById("fontIncBtn").addEventListener("click", function () {
+        applyFontSize(appState.fontSize + 1);
+        showToast("Tamaño de texto: " + appState.fontSize + "px");
+      });
+
+      document.getElementById("themeToggleBtn").addEventListener("click", function () {
+        const nextTheme = appState.theme === "dark" ? "light" : "dark";
+        applyTheme(nextTheme);
+        showToast(nextTheme === "light" ? "Tema claro activado" : "Tema oscuro activado");
+      });
+
+      /* Persistencia de Checklist */
+      const checkboxes = Array.from(document.querySelectorAll('#homeChecklist input[type="checkbox"]'));
+      checkboxes.forEach(function (cb) {
+        const key = cb.getAttribute("data-check");
+        if (appState.checks[key]) cb.checked = true;
+        cb.addEventListener("change", function () {
+          appState.checks[key] = cb.checked;
+          saveState(appState);
+        });
+      });
+
+      /* Control manual de pausa/reanudación de animación SVG */
+      const toggleHeroAnimBtn = document.getElementById("toggleHeroAnimBtn");
+      if (toggleHeroAnimBtn) {
+        toggleHeroAnimBtn.addEventListener("click", function () {
+          const heroBox = document.getElementById("heroSvgContainer");
+          if (!heroBox) return;
+          const paused = heroBox.classList.toggle("svg-paused");
+          showToast(paused ? "Animación pausada" : "Animación reanudada");
+        });
+      }
+
+      /* =====================================================================
+         9. BOTONES FLOTANTES DESPLAZABLES (INICIO Y ARRIBA)
+         ===================================================================== */
+      function makeButtonDraggable(btnEl, onClickAction) {
+        if (!btnEl) return;
+        let isDragging = false;
+        let hasMoved = false;
+        let startX = 0;
+        let startY = 0;
+        let origLeft = 0;
+        let origTop = 0;
+
+        function onPointerDown(ev) {
+          isDragging = true;
+          hasMoved = false;
+          const rect = btnEl.getBoundingClientRect();
+          startX = ev.clientX;
+          startY = ev.clientY;
+          origLeft = rect.left;
+          origTop = rect.top;
+          btnEl.style.right = "auto";
+          btnEl.style.bottom = "auto";
+          btnEl.style.left = origLeft + "px";
+          btnEl.style.top = origTop + "px";
+          if (btnEl.setPointerCapture) {
+            btnEl.setPointerCapture(ev.pointerId);
+          }
+        }
+
+        function onPointerMove(ev) {
+          if (!isDragging) return;
+          const dx = ev.clientX - startX;
+          const dy = ev.clientY - startY;
+          if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            hasMoved = true;
+          }
+          const maxLeft = window.innerWidth - btnEl.offsetWidth - 6;
+          const maxTop = window.innerHeight - btnEl.offsetHeight - 6;
+          const nextLeft = Math.max(6, Math.min(maxLeft, origLeft + dx));
+          const nextTop = Math.max(64, Math.min(maxTop, origTop + dy));
+          btnEl.style.left = nextLeft + "px";
+          btnEl.style.top = nextTop + "px";
+        }
+
+        function onPointerUp(ev) {
+          if (!isDragging) return;
+          isDragging = false;
+          if (btnEl.releasePointerCapture) {
+            try { btnEl.releasePointerCapture(ev.pointerId); } catch (e) {}
+          }
+          if (!hasMoved && typeof onClickAction === "function") {
+            onClickAction();
+          }
+        }
+
+        btnEl.addEventListener("pointerdown", onPointerDown);
+        btnEl.addEventListener("pointermove", onPointerMove);
+        btnEl.addEventListener("pointerup", onPointerUp);
+      }
+
+      makeButtonDraggable(document.getElementById("floatHomeBtn"), function () {
+        goToTab(0);
+      });
+
+      makeButtonDraggable(document.getElementById("floatTopBtn"), function () {
+        scrollCurrentTabToTop();
+      });
+
+      /* =====================================================================
+         10. BARRA DE PROGRESO DE LECTURA E IMPRESIÓN / PDF
+         ===================================================================== */
+      function updateReadingProgress() {
+        const bar = document.getElementById("readingProgressBar");
+        if (!bar) return;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        if (docHeight <= 0) {
+          bar.style.width = "100%";
+          return;
+        }
+        const pct = Math.max(0, Math.min(100, (window.scrollY / docHeight) * 100));
+        bar.style.width = pct + "%";
+      }
+
+      window.addEventListener("scroll", updateReadingProgress, { passive: true });
+
+      let previousDetailsStates = [];
+
+      function prepareDocumentForPrint() {
+        mountHeroSvgInContainer("heroSvgContainer");
+        mountHeroSvgInContainer("creditsSvgContainer");
+        const allDetails = Array.from(document.querySelectorAll("details"));
+        previousDetailsStates = allDetails.map(function (d) { return d.open; });
+        allDetails.forEach(function (d) { d.open = true; });
+      }
+
+      function restoreDocumentAfterPrint() {
+        const allDetails = Array.from(document.querySelectorAll("details"));
+        allDetails.forEach(function (d, idx) {
+          if (typeof previousDetailsStates[idx] === "boolean") {
+            d.open = previousDetailsStates[idx];
+          }
+        });
+      }
+
+      window.addEventListener("beforeprint", prepareDocumentForPrint);
+      window.addEventListener("afterprint", restoreDocumentAfterPrint);
+
+      document.getElementById("printTutorialBtn").addEventListener("click", function () {
+        try {
+          prepareDocumentForPrint();
+          window.print();
+        } catch (err) {
+          showToast("Abre este archivo directamente en el navegador y utiliza Ctrl+P o Cmd+P");
+        }
+      });
+
+      /* =====================================================================
+         11. INICIALIZACIÓN COMPLETA
+         ===================================================================== */
+      mountBrandLogos();
+      buildNavigationAndIndex();
+      applyFontSize(appState.fontSize);
+      applyTheme(appState.theme);
+      goToTab(appState.activeTab);
+      setInterval(verifyVisibleSvgContainers, 2500);
+    })();
+  </script>
+</body>
+</html>
